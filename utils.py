@@ -1,7 +1,8 @@
 from Cube import RubikCube, CubeFace, FaceDirection
 
 class InvalidCubeConfiguration(Exception):
-    pass
+    def __init__(self,message):
+        super().__init__(f"The cube configuration supplied is not valid.{message}")
 
 
 def compute_face_score(face : CubeFace, colors, placement) -> int:
