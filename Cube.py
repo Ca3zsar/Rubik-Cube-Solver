@@ -46,12 +46,12 @@ class RubikCube:
     '''
 
     movements = {
-        FaceDirection.UP : [(FaceDirection.LEFT,'L',0),(FaceDirection.BACK,'L',0),(FaceDirection.RIGHT,'L',0),(FaceDirection.FRONT,'L',0)],
-        FaceDirection.LEFT : [],
-        FaceDirection.FRONT : [],
-        FaceDirection.RIGHT : [],
-        FaceDirection.BACK : [],
-        FaceDirection.DOWN : [(FaceDirection.FRONT,'L',2),(FaceDirection.RIGHT,'L',2),(FaceDirection.BACK,'L',2),(FaceDirection.LEFT,'L',2)]
+        FaceDirection.UP : [(FaceDirection.LEFT,'L',0,1),(FaceDirection.BACK,'L',0,1),(FaceDirection.RIGHT,'L',0,1),(FaceDirection.FRONT,'L',0,1)],
+        FaceDirection.LEFT : [(FaceDirection.DOWN,'C',0,-1),(FaceDirection.BACK,'C',2,-1),(FaceDirection.UP,'C',0,1),(FaceDirection.FRONT,'C',0,1)],
+        FaceDirection.FRONT : [(FaceDirection.UP,'L',2,1),(FaceDirection.RIGHT,'C',0,-1),(FaceDirection.DOWN,'L',0,1),(FaceDirection.LEFT,'C',2,-1)],
+        FaceDirection.RIGHT : [(FaceDirection.FRONT,'C',2,1),(FaceDirection.UP,'C',2),(FaceDirection.BACK,'C',0,-1),(FaceDirection.DOWN,'C',2,-1)],
+        FaceDirection.BACK : [(FaceDirection.LEFT,'C',0,1),(FaceDirection.DOWN,'L',2,-1),(FaceDirection.RIGHT,'C',2,1),(FaceDirection.UP,'L',0,-1)],
+        FaceDirection.DOWN : [(FaceDirection.FRONT,'L',2,1),(FaceDirection.RIGHT,'L',2,1),(FaceDirection.BACK,'L',2,1),(FaceDirection.LEFT,'L',2,1)]
     }
 
     def __init__(self, configuration : list):
@@ -84,11 +84,21 @@ class RubikCube:
 
         # Apply the change to the other faces
         for i in range(len(moves)):
-            if moves[i][1] == 'L':
-                previous = (i-1)%len(moves)
-                faces_copy[moves[i][0].value].face_matrix[moves[i][2]] = self.faces[moves[previous][0].value].face_matrix[moves[previous][2]][:]
+            previous = (i-1)%len(moves)
+            #TODO : add optimisation : some operations might be repeated?
+
+            to_paste = list()
+
+            if moves[previous][i] == 'L':
+                to_paste = self.faces[moves[previous][0].value].face_matrix[moves[previous][2]][::moves[previous][3]]
             else:
-                pass
+                to_paste = [list(column) for column in zip(*self.faces[moves[previous][0].value].face_matrix)][moves[previous][2]][::moves[previous][3]]
+
+            if moves[i][1] == 'L':
+                faces_copy[moves[i][0].value].face_matrix[moves[i][2]] = to_paste
+            else:
+                for j in range(len(to_paste)):
+                    faces_copy[moves[i][0].value].face_matrix[j][moves[i][2]] = to_paste[j]
 
         self.faces = faces_copy[:]
 
@@ -96,15 +106,22 @@ class RubikCube:
 def main():
     try:
         rubik_cube= RubikCube([
-            Color.ORANGE, Color.GREEN, Color.ORANGE, Color.WHITE, Color.WHITE, Color.YELLOW, Color.ORANGE, Color.BLUE, Color.YELLOW,
-            Color.BLUE, Color.RED, Color.BLUE, Color.BLUE, Color.RED, Color.ORANGE, Color.YELLOW, Color.ORANGE, Color.GREEN,
-            Color.YELLOW, Color.YELLOW, Color.BLUE, Color.GREEN, Color.BLUE, Color.ORANGE, Color.WHITE, Color.RED, Color.WHITE,
-            Color.RED, Color.GREEN, Color.GREEN, Color.YELLOW, Color.ORANGE, Color.BLUE, Color.BLUE, Color.ORANGE, Color.GREEN,
-            Color.WHITE, Color.WHITE, Color.WHITE, Color.RED, Color.GREEN, Color.WHITE, Color.RED, Color.RED, Color.GREEN,
-            Color.RED, Color.YELLOW, Color.RED, Color.BLUE, Color.YELLOW, Color.WHITE, Color.ORANGE, Color.GREEN, Color.YELLOW
+            Color.ORANGE, Color.BLUE, Color.WHITE, Color.YELLOW, Color.WHITE, Color.WHITE, Color.GREEN, Color.RED, Color.GREEN,
+            Color.YELLOW, Color.ORANGE, Color.ORANGE, Color.GREEN, Color.RED, Color.RED, Color.BLUE, Color.RED, Color.WHITE,
+            Color.YELLOW, Color.YELLOW, Color.WHITE, Color.WHITE, Color.BLUE, Color.ORANGE, Color.RED, Color.WHITE, Color.BLUE,
+            Color.ORANGE, Color.BLUE, Color.BLUE, Color.BLUE, Color.ORANGE, Color.YELLOW, Color.YELLOW, Color.WHITE, Color.YELLOW,
+            Color.ORANGE, Color.YELLOW, Color.BLUE, Color.GREEN, Color.GREEN, Color.RED, Color.GREEN, Color.GREEN, Color.WHITE,
+            Color.GREEN, Color.GREEN, Color.RED, Color.BLUE, Color.YELLOW, Color.ORANGE, Color.RED, Color.ORANGE, Color.RED
         ])
     except utils.InvalidCubeConfiguration as cube_exception:
         print(cube_exception)
+
+    rubik_cube.make_clockwise_rotation(FaceDirection.LEFT)
+
+    for face in rubik_cube.faces:
+        for row in face.face_matrix:
+            print(row)
+        print("----------")
 
 
 if __name__ == "__main__":
