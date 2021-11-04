@@ -39,6 +39,11 @@ class CubeFace:
         rotated = [list(reversed(column)) for column in zip(*self.face_matrix)]
         self.face_matrix = rotated
 
+    def rotate_counter(self):
+        self.face_matrix = [row[::-1] for row in self.face_matrix]
+        rotated = [list(reversed(column)) for column in zip(*self.face_matrix[::-1])]
+        self.face_matrix = rotated
+
 class RubikCube:
     '''
     A class used to represent a cube in a simple way. 
@@ -49,9 +54,18 @@ class RubikCube:
         FaceDirection.UP : [(FaceDirection.LEFT,'L',0,1),(FaceDirection.BACK,'L',0,1),(FaceDirection.RIGHT,'L',0,1),(FaceDirection.FRONT,'L',0,1)],
         FaceDirection.LEFT : [(FaceDirection.DOWN,'C',0,-1),(FaceDirection.BACK,'C',2,-1),(FaceDirection.UP,'C',0,1),(FaceDirection.FRONT,'C',0,1)],
         FaceDirection.FRONT : [(FaceDirection.UP,'L',2,1),(FaceDirection.RIGHT,'C',0,-1),(FaceDirection.DOWN,'L',0,1),(FaceDirection.LEFT,'C',2,-1)],
-        FaceDirection.RIGHT : [(FaceDirection.FRONT,'C',2,1),(FaceDirection.UP,'C',2),(FaceDirection.BACK,'C',0,-1),(FaceDirection.DOWN,'C',2,-1)],
+        FaceDirection.RIGHT : [(FaceDirection.FRONT,'C',2,1),(FaceDirection.UP,'C',2,-1),(FaceDirection.BACK,'C',0,-1),(FaceDirection.DOWN,'C',2,1)],
         FaceDirection.BACK : [(FaceDirection.LEFT,'C',0,1),(FaceDirection.DOWN,'L',2,-1),(FaceDirection.RIGHT,'C',2,1),(FaceDirection.UP,'L',0,-1)],
         FaceDirection.DOWN : [(FaceDirection.FRONT,'L',2,1),(FaceDirection.RIGHT,'L',2,1),(FaceDirection.BACK,'L',2,1),(FaceDirection.LEFT,'L',2,1)]
+    }
+
+    revert_movements = {
+        FaceDirection.UP : [(FaceDirection.FRONT,'L',0,1),(FaceDirection.RIGHT,'L',0,1),(FaceDirection.BACK,'L',0,1),(FaceDirection.LEFT,'L',0,1)],
+        FaceDirection.LEFT : [(FaceDirection.FRONT,'C',0,1),(FaceDirection.UP,'C',0,-1),(FaceDirection.BACK,'C',2,-1),(FaceDirection.DOWN,'C',0,1)],
+        FaceDirection.FRONT : [(FaceDirection.LEFT,'C',2,1),(FaceDirection.DOWN,'L',0,-1),(FaceDirection.RIGHT,'C',0,1),(FaceDirection.UP,'L',2,-1)],
+        FaceDirection.RIGHT : [(FaceDirection.DOWN,'C',2,-1),(FaceDirection.BACK,'C',0,-1),(FaceDirection.UP,'C',2,1),(FaceDirection.FRONT,'C',2,1)],
+        FaceDirection.BACK : [(FaceDirection.UP,'L',0,1),(FaceDirection.RIGHT,'C',2,-1),(FaceDirection.DOWN,'L',2,1),(FaceDirection.LEFT,'C',0,-1)],
+        FaceDirection.DOWN : [(FaceDirection.LEFT,'L',2,1),(FaceDirection.BACK,'L',2,1),(FaceDirection.RIGHT,'L',2,1),(FaceDirection.FRONT,'L',2,1)] 
     }
 
     def __init__(self, configuration : list):
@@ -69,18 +83,27 @@ class RubikCube:
         if not utils.validate_cube_configuration(self):
             raise utils.InvalidCubeConfiguration("One or more facets might be twisted")
     
-    def make_clockwise_rotation(self, face : FaceDirection):
+    def make_rotation(self, face : FaceDirection, clockwise : bool):
         '''
-        Receive a chosen face and rotate it clockwise.
+        Receive a chosen face and rotate it clockwise or counter clockwise.
         '''
+        sign = 1
+        if not clockwise:
+            sign = -1
 
         # Make a copy of the actual faces
         faces_copy = copy.deepcopy(self.faces)
         
         # Rotate the chosen face clockwise
-        faces_copy[face.value].rotate_clockwise()
-        
-        moves = RubikCube.movements[face]
+        if clockwise:
+            faces_copy[face.value].rotate_clockwise()
+        else:
+            faces_copy[face.value].rotate_counter()
+
+        if clockwise:
+            moves = RubikCube.movements[face]
+        else:
+            moves = RubikCube.revert_movements[face]
 
         # Apply the change to the other faces
         for i in range(len(moves)):
@@ -89,10 +112,13 @@ class RubikCube:
 
             to_paste = list()
 
-            if moves[previous][i] == 'L':
-                to_paste = self.faces[moves[previous][0].value].face_matrix[moves[previous][2]][::moves[previous][3]]
+            if moves[previous][1] == 'L':
+                to_paste = self.faces[moves[previous][0].value].face_matrix[moves[previous][2]]
             else:
-                to_paste = [list(column) for column in zip(*self.faces[moves[previous][0].value].face_matrix)][moves[previous][2]][::moves[previous][3]]
+                to_paste = [list(column) for column in zip(*self.faces[moves[previous][0].value].face_matrix)][moves[previous][2]]
+            
+            if moves[previous][3] == -1:
+                to_paste = list(reversed(to_paste))
 
             if moves[i][1] == 'L':
                 faces_copy[moves[i][0].value].face_matrix[moves[i][2]] = to_paste
@@ -116,7 +142,7 @@ def main():
     except utils.InvalidCubeConfiguration as cube_exception:
         print(cube_exception)
 
-    rubik_cube.make_clockwise_rotation(FaceDirection.LEFT)
+    rubik_cube.make_rotation(FaceDirection.RIGHT, False)
 
     for face in rubik_cube.faces:
         for row in face.face_matrix:
