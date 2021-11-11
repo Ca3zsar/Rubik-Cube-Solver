@@ -87,6 +87,7 @@ class RubikCube:
         '''
         Receive a chosen face and rotate it clockwise or counter clockwise.
         '''
+        print(face, clockwise)
         sign = 1
         if not clockwise:
             sign = -1
@@ -129,7 +130,11 @@ class RubikCube:
         self.faces = faces_copy[:]
 
     def front_to_up_right(self, down_color : Color):
+        while self.faces[FaceDirection.UP.value].face_matrix[2][1] == down_color:
+            self.make_rotation(FaceDirection.UP, True)
+
         self.make_rotation(FaceDirection.FRONT, True)
+        
         while self.faces[FaceDirection.UP.value].face_matrix[1][2] == down_color:
             self.make_rotation(FaceDirection.UP, True)
         self.make_rotation(FaceDirection.RIGHT, True)
@@ -178,17 +183,27 @@ class RubikCube:
         
         while color_number < 4:
             for face in sides:
-                if self.faces[face.value].face_matrix[0][2] == down_color:
+                if self.faces[face.value].face_matrix[0][1] == down_color:
                     self.third_layer_to_up(face, down_color)
                     color_number += 1
 
                 if self.faces[face.value].face_matrix[1][0] == down_color:
-                    while self.check_up_color(face) == down_color:
+                    face_to_check = sides[sides.index(face)-1]
+
+                    while self.check_up_color(face_to_check) == down_color:
                         self.make_rotation(FaceDirection.UP,True)
-                    self.make_rotation(face,True)
+                    self.make_rotation(face_to_check,False)
                     color_number += 1
 
-                if self.faces[face.value].face_matrix[1][0] == down_color:
+                if self.faces[face.value].face_matrix[1][2] == down_color:
+                    face_to_check = sides[(sides.index(face)+1)%4]
+
+                    while self.check_up_color(face_to_check) == down_color:
+                        self.make_rotation(FaceDirection.UP,True)
+                    self.make_rotation(face_to_check,True)
+                    color_number += 1
+
+                if self.faces[face.value].face_matrix[2][1] == down_color:
                     while self.check_up_color(face) == down_color:
                         self.make_rotation(FaceDirection.UP,True)
 
@@ -242,15 +257,16 @@ class RubikCube:
 def main():
     try:
         rubik_cube= RubikCube([
-            Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE,
-            Color.RED, Color.RED, Color.RED, Color.RED, Color.RED, Color.RED, Color.RED, Color.RED, Color.RED,
-            Color.BLUE, Color.BLUE, Color.BLUE, Color.BLUE, Color.BLUE, Color.BLUE, Color.BLUE, Color.BLUE, Color.BLUE,
-            Color.ORANGE, Color.ORANGE, Color.ORANGE, Color.ORANGE, Color.ORANGE, Color.ORANGE, Color.ORANGE, Color.ORANGE, Color.ORANGE,
-            Color.GREEN, Color.GREEN, Color.GREEN, Color.GREEN, Color.GREEN, Color.GREEN, Color.GREEN, Color.GREEN, Color.GREEN,
-            Color.YELLOW, Color.YELLOW, Color.YELLOW, Color.YELLOW, Color.YELLOW, Color.YELLOW, Color.YELLOW, Color.YELLOW, Color.YELLOW
+            Color.RED, Color.BLUE, Color.YELLOW, Color.GREEN, Color.WHITE, Color.GREEN, Color.BLUE, Color.ORANGE, Color.ORANGE,
+            Color.GREEN, Color.WHITE, Color.ORANGE, Color.BLUE, Color.RED, Color.GREEN, Color.RED, Color.RED, Color.YELLOW,
+            Color.WHITE, Color.BLUE, Color.GREEN, Color.RED, Color.BLUE, Color.WHITE, Color.GREEN, Color.WHITE, Color.GREEN,
+            Color.WHITE, Color.ORANGE, Color.ORANGE, Color.ORANGE, Color.ORANGE, Color.YELLOW, Color.YELLOW, Color.GREEN, Color.WHITE,
+            Color.BLUE, Color.RED, Color.WHITE, Color.ORANGE, Color.GREEN, Color.YELLOW, Color.BLUE, Color.WHITE, Color.YELLOW,
+            Color.RED, Color.RED, Color.ORANGE, Color.YELLOW, Color.YELLOW, Color.YELLOW, Color.BLUE, Color.BLUE, Color.RED
         ])
     except utils.InvalidCubeConfiguration as cube_exception:
         print(cube_exception)
+        return
 
     rubik_cube.solve()
 
