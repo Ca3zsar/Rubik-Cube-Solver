@@ -1,4 +1,4 @@
-from Cube import RubikCube, CubeFace, FaceDirection
+from Cube import Color, RubikCube, CubeFace, FaceDirection
 
 class InvalidCubeConfiguration(Exception):
     def __init__(self,message):
@@ -56,3 +56,13 @@ def validate_cube_configuration(cube : RubikCube) -> bool:
         return False
     
     return True
+
+def is_right_down_cube(down_color : Color, down_side : CubeFace,first_side : CubeFace,second_side : CubeFace) -> bool:
+    '''
+    For a specific bottom color and 2 faces check if the right side down corner 
+    is correctly put and return True
+    '''
+
+    return down_color == down_side.face_color and \
+            first_side.face_matrix[2][2] == first_side.face_color and \
+            second_side.face_matrix[2][0] == second_side.face_color
