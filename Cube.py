@@ -252,7 +252,6 @@ class RubikCube:
     def bring_corners_down(self):
         down_color = self.faces[FaceDirection.DOWN.value].face_color
 
-        sides = [FaceDirection.LEFT, FaceDirection.FRONT, FaceDirection.RIGHT, FaceDirection.BACK]
         positions_up = [(2,0,FaceDirection.LEFT,FaceDirection.FRONT),
                         (2,2,FaceDirection.FRONT,FaceDirection.RIGHT),
                         (0,2,FaceDirection.RIGHT,FaceDirection.BACK),
@@ -264,16 +263,13 @@ class RubikCube:
 
         color_number = 0
         for position in positions_down:
-            if self.faces[position[2].value].face_matrix[2][2] == self.faces[position[2].value].face_color and \
-               self.faces[position[3].value].face_matrix[2][0] == self.faces[position[3].value].face_color and \
-               self.faces[FaceDirection.DOWN.value].face_matrix[position[0]][position[1]] == down_color:
-                
+            if utils.is_right_down_cube(position[0],position[1],self.faces[FaceDirection.DOWN.value],self.faces[position[2].value],self.faces[position[3].value]):
                 color_number += 1
-
         if color_number == 4:
             return
         
         while color_number < 4:
+            color_number = 0
             for position in positions_down:
                 down_necessary = {down_color : 1, 
                                 self.faces[position[2].value].face_color : 1,
@@ -286,16 +282,16 @@ class RubikCube:
                 if down_color in current.keys():
                     if down_necessary == current:
 
-                        while not utils.is_right_down_cube(down_color,self.faces[FaceDirection.DOWN.value],self.faces[position[2].value],self.faces[position[3].value]):
+                        while not utils.is_right_down_cube(position[0],position[1],self.faces[FaceDirection.DOWN.value],self.faces[position[2].value],self.faces[position[3].value]):
                             self.permute_corner(position[3])
-
-                        color_number += 1
-
-                    if not utils.is_right_down_cube(down_color,self.faces[FaceDirection.DOWN.value],self.faces[position[2].value],self.faces[position[3].value]):
+                        
+                    elif not utils.is_right_down_cube(position[0],position[1],self.faces[FaceDirection.DOWN.value],self.faces[position[2].value],self.faces[position[3].value]):
                         #Bring the corner up
                         self.permute_corner(position[3])
 
-            for position in positions_up:
+
+            for index in range(len(positions_up)):
+                position = positions_up[index]
                 up_necessary = {down_color : 1, 
                                 self.faces[position[2].value].face_color : 1,
                                 self.faces[position[3].value].face_color : 1}
@@ -306,11 +302,16 @@ class RubikCube:
 
                 if down_color in current.keys():
                     if up_necessary == current:
-                        while not utils.is_right_down_cube(down_color,self.faces[FaceDirection.DOWN.value],self.faces[position[2].value],self.faces[position[3].value]):
+                        while not utils.is_right_down_cube(positions_down[index][0],positions_down[index][1],self.faces[FaceDirection.DOWN.value],self.faces[position[2].value],self.faces[position[3].value]):
                             self.permute_corner(position[3])
-
-                        color_number += 1
-
+                            
+            for position in positions_down:
+                if utils.is_right_down_cube(position[0],position[1],self.faces[FaceDirection.DOWN.value],self.faces[position[2].value],self.faces[position[3].value]):
+                    color_number += 1
+                
+            if color_number == 4:
+                break
+            
             self.make_rotation(FaceDirection.UP, True)
 
     def solve_bottom_layer(self):
@@ -343,12 +344,12 @@ class RubikCube:
 def main():
     try:
         rubik_cube= RubikCube([
-            Color.YELLOW, Color.RED, Color.ORANGE, Color.WHITE, Color.WHITE, Color.BLUE, Color.YELLOW, Color.ORANGE, Color.GREEN,
-            Color.ORANGE, Color.ORANGE, Color.ORANGE, Color.YELLOW, Color.RED, Color.GREEN, Color.RED, Color.GREEN, Color.WHITE,
-            Color.BLUE, Color.YELLOW, Color.YELLOW, Color.WHITE, Color.BLUE, Color.BLUE, Color.ORANGE, Color.BLUE, Color.RED,
-            Color.RED, Color.RED, Color.GREEN, Color.YELLOW, Color.ORANGE, Color.BLUE, Color.WHITE, Color.GREEN, Color.GREEN,
-            Color.WHITE, Color.GREEN, Color.GREEN, Color.ORANGE, Color.GREEN, Color.RED, Color.WHITE, Color.RED, Color.YELLOW,
-            Color.BLUE, Color.WHITE, Color.BLUE, Color.YELLOW, Color.YELLOW, Color.ORANGE, Color.BLUE, Color.WHITE, Color.RED
+            Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE,
+            Color.RED, Color.RED, Color.RED, Color.RED, Color.RED, Color.RED, Color.RED, Color.RED, Color.RED,
+            Color.BLUE, Color.BLUE, Color.BLUE, Color.BLUE, Color.BLUE, Color.BLUE, Color.BLUE, Color.BLUE, Color.BLUE,
+            Color.ORANGE, Color.ORANGE, Color.ORANGE, Color.ORANGE, Color.ORANGE, Color.ORANGE, Color.ORANGE, Color.ORANGE, Color.ORANGE,
+            Color.GREEN, Color.GREEN, Color.GREEN, Color.GREEN, Color.GREEN, Color.GREEN, Color.GREEN, Color.GREEN, Color.GREEN,
+            Color.YELLOW, Color.YELLOW, Color.YELLOW, Color.YELLOW, Color.YELLOW, Color.YELLOW, Color.YELLOW, Color.YELLOW, Color.YELLOW
         ])
     except utils.InvalidCubeConfiguration as cube_exception:
         print(cube_exception)
