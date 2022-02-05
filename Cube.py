@@ -514,7 +514,12 @@ class RubikCube:
                 self.inverse_permute_corner(moves[0])
                 self.inverse_counter_permute_corner(moves[0 - 2])
 
-                faces_solved = [i - 1 for i in range(1, 5) if utils.face_solved(self.faces[i])]
+                rotations = 0
+                while rotations < 3:
+                    faces_solved = [i - 1 for i in range(1, 5) if utils.face_solved(self.faces[i])]
+                    if faces_solved:
+                        break
+                    self.make_rotation(FaceDirection.UP, True)
 
             self.fill_last_faces(faces_solved)
 
@@ -531,7 +536,7 @@ class RubikCube:
         if utils.is_cube_solved(self.faces):
             return
 
-        self.fill_last_faces(faces_solved)
+        self.complete_cube(faces_solved)
 
     def solve(self):
         """
@@ -546,22 +551,18 @@ class RubikCube:
 def main():
     try:
         rubik_cube = RubikCube([
-            Color.GREEN, Color.WHITE, Color.ORANGE, Color.ORANGE, Color.WHITE, Color.WHITE, Color.RED, Color.WHITE,
-            Color.WHITE,
-            Color.ORANGE, Color.WHITE, Color.WHITE, Color.RED, Color.RED, Color.RED, Color.RED, Color.RED,
-            Color.RED,
-            Color.GREEN, Color.BLUE, Color.RED, Color.BLUE, Color.BLUE, Color.ORANGE, Color.BLUE, Color.BLUE,
-            Color.BLUE,
-            Color.BLUE, Color.RED, Color.WHITE, Color.BLUE, Color.ORANGE, Color.ORANGE, Color.ORANGE, Color.ORANGE,
-            Color.ORANGE,
-            Color.BLUE, Color.GREEN, Color.WHITE, Color.GREEN, Color.GREEN, Color.GREEN, Color.GREEN, Color.GREEN,
-            Color.GREEN,
-            Color.YELLOW, Color.YELLOW, Color.YELLOW, Color.YELLOW, Color.YELLOW, Color.YELLOW, Color.YELLOW,
-            Color.YELLOW, Color.YELLOW
+            Color.YELLOW, Color.RED, Color.WHITE, Color.RED, Color.GREEN, Color.GREEN, Color.WHITE, Color.GREEN, Color.WHITE,
+            Color.GREEN, Color.WHITE, Color.RED, Color.WHITE, Color.WHITE, Color.ORANGE, Color.YELLOW, Color.YELLOW, Color.YELLOW,
+            Color.BLUE, Color.ORANGE, Color.ORANGE, Color.BLUE, Color.ORANGE, Color.BLUE, Color.ORANGE, Color.BLUE, Color.BLUE,
+            Color.GREEN, Color.YELLOW, Color.BLUE, Color.YELLOW, Color.YELLOW, Color.YELLOW, Color.ORANGE, Color.WHITE, Color.RED,
+            Color.ORANGE, Color.GREEN, Color.RED, Color.RED, Color.RED, Color.BLUE, Color.GREEN, Color.WHITE, Color.BLUE,
+            Color.GREEN, Color.RED, Color.YELLOW, Color.ORANGE, Color.BLUE, Color.GREEN, Color.RED, Color.ORANGE, Color.WHITE
         ])
     except utils.InvalidCubeConfiguration as cube_exception:
         print(cube_exception)
         return
+    except Exception as e:
+        print(e)
 
     rubik_cube.solve()
 
