@@ -460,6 +460,25 @@ class RubikCube:
                 for _ in range(3):
                     self.counter_permute_corner(diagonal_moves[move][1])
 
+        front_face = self.faces[2].face_matrix
+        left_face = self.faces[1].face_matrix
+        up_color = self.faces[0].face_color
+
+        while not utils.face_solved(self.faces[0]):
+            if self.faces[2].face_matrix[0][0] != up_color and self.faces[1].face_matrix[0][2] != up_color:
+                self.make_rotation(FaceDirection.UP, True)
+                continue
+
+            if self.faces[2].face_matrix[0][0] == up_color:
+                rotations = 4
+            else:
+                rotations = 2
+            for _ in range(rotations):
+                self.make_rotation(FaceDirection.LEFT, True)
+                self.make_rotation(FaceDirection.DOWN, True)
+                self.make_rotation(FaceDirection.LEFT, False)
+                self.make_rotation(FaceDirection.DOWN, False)
+
     def solve(self):
         """
         The solving algorithm is an easy sequence of steps

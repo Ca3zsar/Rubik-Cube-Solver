@@ -166,3 +166,16 @@ def match_corners(faces: list[CubeFace]) -> list[int]:
             matching.append(i)
 
     return matching
+
+
+def face_solved(face: CubeFace) -> bool:
+    """
+    Check if a face is entirely solved
+    :param face: the face to check
+    :return bool: if the face is solved
+    """
+    for i in range(3):
+        for j in range(3):
+            if face.face_matrix[i][j] != face.face_color:
+                return False
+    return True
