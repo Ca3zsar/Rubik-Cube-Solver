@@ -1,6 +1,9 @@
 from enum import Enum
 import copy
 import utils
+from time import perf_counter
+
+moves_number = 0
 
 
 class FaceDirection(Enum):
@@ -105,6 +108,8 @@ class RubikCube:
         """
         Receive a chosen face and rotate it clockwise or counterclockwise.
         """
+        global moves_number
+        moves_number += 1
         print(face, clockwise)
 
         # Make a copy of the actual faces
@@ -145,16 +150,6 @@ class RubikCube:
 
         self.faces = faces_copy[:]
 
-    def front_to_up_right(self, down_color: Color):
-        while self.faces[FaceDirection.UP.value].face_matrix[2][1] == down_color:
-            self.make_rotation(FaceDirection.UP, True)
-
-        self.make_rotation(FaceDirection.FRONT, True)
-
-        while self.faces[FaceDirection.UP.value].face_matrix[1][2] == down_color:
-            self.make_rotation(FaceDirection.UP, True)
-        self.make_rotation(FaceDirection.RIGHT, True)
-
     def check_up_color(self, face):
         if face == FaceDirection.RIGHT:
             return self.faces[FaceDirection.UP.value].face_matrix[1][2]
@@ -168,18 +163,18 @@ class RubikCube:
         if face == FaceDirection.FRONT:
             return self.faces[FaceDirection.UP.value].face_matrix[2][1]
 
-    def third_layer_to_up(self, face, down_color):
+    def third_layer_to_up(self, face: FaceDirection, down_color: Color):
+        sides = [FaceDirection.LEFT, FaceDirection.FRONT, FaceDirection.RIGHT, FaceDirection.BACK]
+        positions = [(1, 0), (2, 1), (1, 2), (0, 1)]
 
-        if face == FaceDirection.FRONT:
-            self.front_to_up_right(down_color)
-        else:
-            difference = face.value - FaceDirection.FRONT.value
-            if difference > 0:
-                for i in range(difference):
-                    self.make_rotation(FaceDirection.UP, True)
-            else:
-                self.make_rotation(FaceDirection.UP, False)
-            self.front_to_up_right(down_color)
+        next_face = (sides.index(face) + 1) % len(sides)
+
+        self.make_rotation(face, True)
+
+        while self.faces[FaceDirection.UP.value].face_matrix[positions[next_face][0]][positions[next_face][1]] == down_color:
+            self.make_rotation(FaceDirection.UP, True)
+
+        self.make_rotation(sides[next_face], True)
 
     def permute_corner(self, face: FaceDirection):
         self.make_rotation(face, True)
@@ -243,12 +238,31 @@ class RubikCube:
                     color_number += 1
 
                 if self.faces[face.value].face_matrix[2][1] == down_color:
-                    while self.check_up_color(face) == down_color:
-                        self.make_rotation(FaceDirection.UP, True)
+                    face_to_check = sides[(sides.index(face) + 1) % 4]
+
+                    if not (self.check_up_color(face_to_check) == down_color):
+                        self.make_rotation(face, False)
+                        self.make_rotation(face_to_check, True)
+                        color_number += 1
+                        continue
+
+                    face_to_check = sides[(sides.index(face) - 1) % 4]
+
+                    if not (self.check_up_color(face_to_check) == down_color):
+                        self.make_rotation(face, True)
+                        self.make_rotation(face_to_check, False)
+                        color_number += 1
+                        continue
+
+                    if self.check_up_color(face) == down_color:
+                        self.make_rotation(FaceDirection.UP, False)
+                        self.make_rotation(FaceDirection.UP, False)
 
                     self.make_rotation(face, True)
-                    self.make_rotation(face, True)
-                    self.third_layer_to_up(face, down_color)
+                    self.make_rotation(FaceDirection.UP, True)
+                    face_to_check = sides[(sides.index(face) - 1) % 4]
+                    self.make_rotation(face_to_check, False)
+
                     color_number += 1
 
             if self.faces[FaceDirection.DOWN.value].face_matrix[0][1] == down_color:
@@ -381,7 +395,6 @@ class RubikCube:
 
     def solve_bottom_layer(self):
         self.form_up_cross()
-
         rotations = 0
         while rotations < 4:
             for face in [FaceDirection.LEFT, FaceDirection.FRONT, FaceDirection.RIGHT, FaceDirection.BACK]:
@@ -551,26 +564,36 @@ class RubikCube:
 def main():
     try:
         rubik_cube = RubikCube([
-            Color.YELLOW, Color.RED, Color.WHITE, Color.RED, Color.GREEN, Color.GREEN, Color.WHITE, Color.GREEN, Color.WHITE,
-            Color.GREEN, Color.WHITE, Color.RED, Color.WHITE, Color.WHITE, Color.ORANGE, Color.YELLOW, Color.YELLOW, Color.YELLOW,
-            Color.BLUE, Color.ORANGE, Color.ORANGE, Color.BLUE, Color.ORANGE, Color.BLUE, Color.ORANGE, Color.BLUE, Color.BLUE,
-            Color.GREEN, Color.YELLOW, Color.BLUE, Color.YELLOW, Color.YELLOW, Color.YELLOW, Color.ORANGE, Color.WHITE, Color.RED,
-            Color.ORANGE, Color.GREEN, Color.RED, Color.RED, Color.RED, Color.BLUE, Color.GREEN, Color.WHITE, Color.BLUE,
-            Color.GREEN, Color.RED, Color.YELLOW, Color.ORANGE, Color.BLUE, Color.GREEN, Color.RED, Color.ORANGE, Color.WHITE
+            Color.YELLOW, Color.RED, Color.WHITE, Color.RED, Color.GREEN, Color.GREEN, Color.WHITE, Color.GREEN,
+            Color.WHITE,
+            Color.GREEN, Color.WHITE, Color.RED, Color.WHITE, Color.WHITE, Color.ORANGE, Color.YELLOW, Color.YELLOW,
+            Color.YELLOW,
+            Color.BLUE, Color.ORANGE, Color.ORANGE, Color.BLUE, Color.ORANGE, Color.BLUE, Color.ORANGE, Color.BLUE,
+            Color.BLUE,
+            Color.GREEN, Color.YELLOW, Color.BLUE, Color.YELLOW, Color.YELLOW, Color.YELLOW, Color.ORANGE, Color.WHITE,
+            Color.RED,
+            Color.ORANGE, Color.GREEN, Color.RED, Color.RED, Color.RED, Color.BLUE, Color.GREEN, Color.WHITE,
+            Color.BLUE,
+            Color.GREEN, Color.RED, Color.YELLOW, Color.ORANGE, Color.BLUE, Color.GREEN, Color.RED, Color.ORANGE,
+            Color.WHITE
         ])
     except utils.InvalidCubeConfiguration as cube_exception:
         print(cube_exception)
         return
     except Exception as e:
         print(e)
+    else:
+        rubik_cube.solve()
 
-    rubik_cube.solve()
-
-    for face in rubik_cube.faces:
-        for row in face.face_matrix:
-            print(row)
-        print("----------")
+        for face in rubik_cube.faces:
+            for row in face.face_matrix:
+                print(row)
+            print("----------")
 
 
 if __name__ == "__main__":
+    start = perf_counter()
     main()
+    end = perf_counter()
+    print(f"TIME : {end - start}")
+    print(moves_number)
