@@ -179,3 +179,14 @@ def face_solved(face: CubeFace) -> bool:
             if face.face_matrix[i][j] != face.face_color:
                 return False
     return True
+
+
+def is_cube_solved(faces : list[CubeFace]) -> bool:
+    """
+    Check if the cube is solved
+    """
+
+    for face in faces:
+        if not face_solved(face):
+            return False
+    return True

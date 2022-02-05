@@ -187,11 +187,23 @@ class RubikCube:
         self.make_rotation(face, False)
         self.make_rotation(FaceDirection.UP, False)
 
+    def inverse_permute_corner(self, face: FaceDirection):
+        self.make_rotation(FaceDirection.UP, True)
+        self.make_rotation(face, True)
+        self.make_rotation(FaceDirection.UP, False)
+        self.make_rotation(face, False)
+
     def counter_permute_corner(self, face: FaceDirection):
         self.make_rotation(face, False)
         self.make_rotation(FaceDirection.UP, False)
         self.make_rotation(face, True)
         self.make_rotation(FaceDirection.UP, True)
+
+    def inverse_counter_permute_corner(self, face: FaceDirection):
+        self.make_rotation(FaceDirection.UP, False)
+        self.make_rotation(face, False)
+        self.make_rotation(FaceDirection.UP, True)
+        self.make_rotation(face, True)
 
     def form_up_cross(self):
         down_color = self.faces[FaceDirection.DOWN.value].face_color
@@ -479,6 +491,48 @@ class RubikCube:
                 self.make_rotation(FaceDirection.LEFT, False)
                 self.make_rotation(FaceDirection.DOWN, False)
 
+    def fill_last_faces(self, faces_solved):
+        moves = [FaceDirection.FRONT, FaceDirection.RIGHT, FaceDirection.BACK, FaceDirection.LEFT]
+
+        while not utils.is_cube_solved(self.faces):
+            self.permute_corner(moves[faces_solved[0]])
+            self.counter_permute_corner(moves[faces_solved[0] - 2])
+
+            self.inverse_permute_corner(moves[faces_solved[0]])
+            self.inverse_counter_permute_corner(moves[faces_solved[0] - 2])
+
+    def complete_cube(self, faces_solved):
+        moves = [FaceDirection.FRONT, FaceDirection.RIGHT, FaceDirection.BACK, FaceDirection.LEFT]
+
+        if faces_solved:
+            self.fill_last_faces(faces_solved)
+        else:
+            while not faces_solved:
+                self.permute_corner(moves[0])
+                self.counter_permute_corner(moves[0 - 2])
+
+                self.inverse_permute_corner(moves[0])
+                self.inverse_counter_permute_corner(moves[0 - 2])
+
+                faces_solved = [i - 1 for i in range(1, 5) if utils.face_solved(self.faces[i])]
+
+            self.fill_last_faces(faces_solved)
+
+    def finish_solving(self):
+        rotations = 0
+        faces_solved = []
+        while not utils.is_cube_solved(self.faces) and rotations < 4:
+            faces_solved = [i - 1 for i in range(1, 5) if utils.face_solved(self.faces[i])]
+            if faces_solved:
+                break
+
+            rotations += 1
+            self.make_rotation(FaceDirection.UP, True)
+        if utils.is_cube_solved(self.faces):
+            return
+
+        self.fill_last_faces(faces_solved)
+
     def solve(self):
         """
         The solving algorithm is an easy sequence of steps
@@ -486,6 +540,7 @@ class RubikCube:
         self.solve_bottom_layer()
         self.solve_middle_layer()
         self.solve_top_layer()
+        self.finish_solving()
 
 
 def main():
