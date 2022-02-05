@@ -78,3 +78,91 @@ def is_middle_solved(faces: list[CubeFace]) -> bool:
                 return False
 
     return True
+
+
+def is_cross_formed(face: CubeFace) -> bool:
+    """
+    For the top face check if the cross is formed
+    :param face: the top face to check
+    :return bool: return if the cross is formed
+    """
+
+    facets = face.face_matrix
+    if facets[0][1] == facets[1][0] == facets[1][2] == facets[2][1] == face.face_color:
+        return True
+    return False
+
+
+def is_horizontal_line(face: CubeFace) -> bool:
+    """
+    For the top face check if there is a horizontal line parallel to the front face
+    :param face: the top face
+    :return bool: return if there is a horizontal line
+    """
+    facets = face.face_matrix
+    return facets[1][0] == facets[1][1] == facets[1][2]
+
+
+def is_vertical_line(face: CubeFace) -> bool:
+    """
+    For the top face check if there is a vertical line parallel to the front face
+    :param face: the top face
+    :return bool: return if there is a vertical line
+    """
+    facets = face.face_matrix
+    return facets[0][1] == facets[1][1] == facets[2][1]
+
+
+def wanted_corner(face: CubeFace) -> bool:
+    """
+    For the top face check if there is a corner that's looking like 9 o'clock
+    :param face: the top face
+    :return bool: return if there is the wanted corner
+    """
+    facets = face.face_matrix
+    return facets[0][1] == facets[1][1] == facets[1][0]
+
+
+def any_corner(face: CubeFace) -> int:
+    """
+    For the top face check if there is any corner that's looking like 9 o'clock
+    :param face: the top face
+    :return bool: return the number of rotations to move the corner to the good location
+    """
+    facets = face.face_matrix
+    if facets[0][1] == facets[1][1] == facets[1][2]:
+        return 3
+
+    if facets[1][1] == facets[1][2] == facets[2][1]:
+        return 2
+
+    if facets[1][0] == facets[1][1] == facets[2][1]:
+        return 1
+
+    return 0
+
+
+def match_corners(faces: list[CubeFace]) -> list[int]:
+    """
+    Return the number of matching corners for the up face
+    """
+    up_color = faces[0].face_color
+    up_pieces = [(2, 0), (2, 2), (0, 2), (0, 0)]
+    sides = faces[1:5]
+
+    matching = []
+
+    for i in range(len(sides)):
+        # Iterate through all 4 sides
+
+        face_color = sides[i].face_color
+        next_face_color = sides[(i + 1) % 4].face_color
+
+        first_piece = sides[i].face_matrix[0][2]
+        second_piece = sides[(i + 1) % 4].face_matrix[0][0]
+        up_piece = faces[0].face_matrix[up_pieces[i][0]][up_pieces[i][1]]
+
+        if {first_piece, second_piece, up_piece} == {face_color, next_face_color, up_color}:
+            matching.append(i)
+
+    return matching

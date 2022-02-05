@@ -187,6 +187,12 @@ class RubikCube:
         self.make_rotation(face, False)
         self.make_rotation(FaceDirection.UP, False)
 
+    def counter_permute_corner(self, face: FaceDirection):
+        self.make_rotation(face, False)
+        self.make_rotation(FaceDirection.UP, False)
+        self.make_rotation(face, True)
+        self.make_rotation(FaceDirection.UP, True)
+
     def form_up_cross(self):
         down_color = self.faces[FaceDirection.DOWN.value].face_color
 
@@ -350,6 +356,17 @@ class RubikCube:
         self.make_rotation(FaceDirection.UP, not (bool(direction)))
         self.make_rotation(main_face, direction)
 
+    def form_final_cross(self, repetitions):
+        self.make_rotation(FaceDirection.FRONT, True)
+
+        for _ in range(repetitions):
+            self.make_rotation(FaceDirection.RIGHT, True)
+            self.make_rotation(FaceDirection.UP, True)
+            self.make_rotation(FaceDirection.RIGHT, False)
+            self.make_rotation(FaceDirection.UP, False)
+
+        self.make_rotation(FaceDirection.FRONT, False)
+
     def solve_bottom_layer(self):
         self.form_up_cross()
 
@@ -404,12 +421,52 @@ class RubikCube:
 
                 self.make_rotation(FaceDirection.UP, True)
 
+    def solve_top_layer(self):
+        while not utils.is_cross_formed(self.faces[0]):
+            if utils.is_horizontal_line(self.faces[0]):
+                self.form_final_cross(1)
+            elif utils.is_vertical_line(self.faces[0]):
+                self.make_rotation(FaceDirection.UP, True)
+            elif utils.wanted_corner(self.faces[0]):
+                self.form_final_cross(2)
+            elif rotations := utils.any_corner(self.faces[0]):
+                for _ in range(rotations):
+                    self.make_rotation(FaceDirection.UP, True)
+            else:
+                self.form_final_cross(2)
+
+        faces_moves = [FaceDirection.FRONT, FaceDirection.RIGHT, FaceDirection.BACK, FaceDirection.LEFT]
+        outcomes = [{0, 3}, {0, 1}, {1, 2}, {2, 3}]
+
+        diagonal_moves = [(FaceDirection.RIGHT, FaceDirection.FRONT), (FaceDirection.BACK, FaceDirection.RIGHT)]
+        diagonal_outcomes = [{0, 2}, {1, 3}]
+
+        while len(matches := utils.match_corners(self.faces)) != 4:
+            if len(matches) != 2:
+                self.make_rotation(FaceDirection.UP, True)
+                continue
+
+            difference = abs(matches[0] - matches[1])
+            if difference % 2 == 1:
+                move = [i for i in range(4) if outcomes[i] == set(matches)][0]
+                for _ in range(3):
+                    self.permute_corner(faces_moves[(move + 1) % 4])
+                for _ in range(3):
+                    self.counter_permute_corner(faces_moves[move])
+            else:
+                move = 0 if diagonal_outcomes[0] == set(matches) else 1
+                for _ in range(3):
+                    self.permute_corner(diagonal_moves[move][0])
+                for _ in range(3):
+                    self.counter_permute_corner(diagonal_moves[move][1])
+
     def solve(self):
         """
         The solving algorithm is an easy sequence of steps
         """
         self.solve_bottom_layer()
         self.solve_middle_layer()
+        self.solve_top_layer()
 
 
 def main():
