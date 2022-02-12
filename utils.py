@@ -1,5 +1,5 @@
-from Cube import RubikCube, CubeFace, FaceDirection
-
+from CubeElements import CubeFace, FaceDirection
+from LayerByLayer import RubikCube
 
 class InvalidCubeConfiguration(Exception):
     def __init__(self, message):
