@@ -532,7 +532,6 @@ class CFOPCube(RubikCube):
 
         if faces_solved:
             self.PLL_one_completed(faces_solved)
-            print("HERE")
         else:
             while not utils.is_cube_solved(self.faces):
                 matches = utils.match_perfect_corners(self.faces)
@@ -591,7 +590,10 @@ class CFOPCube(RubikCube):
                             break
                         self.make_rotation(FaceDirection.UP, True)
 
+                    matches = utils.match_perfect_corners(self.faces)
+
                 faces_solved = utils.get_solved_faces(self)
+
                 if len(faces_solved) == 4:
                     return
 
@@ -599,49 +601,73 @@ class CFOPCube(RubikCube):
                     self.PLL_one_completed(faces_solved)
                     return
 
-                if not faces_solved:
+                if not faces_solved and len(utils.match_perfect_corners(self.faces)) == 4:
                     if self.faces[1].face_matrix[0][1] == self.faces[3].face_color and \
                             self.faces[2].face_matrix[0][1] == self.faces[4].face_color and \
                             self.faces[3].face_matrix[0][1] == self.faces[1].face_color:
-                        print("Here")
-                        self.make_rotation(FaceDirection.RIGHT, False)
-                        self.make_rotation(FaceDirection.RIGHT, False)
-                        self.make_rotation(FaceDirection.UP, True)
-                        self.make_rotation(FaceDirection.UP, True)
-                        self.make_rotation(FaceDirection.RIGHT, False)
-                        self.make_rotation(FaceDirection.UP, True)
-                        self.make_rotation(FaceDirection.UP, True)
-                        self.make_rotation(FaceDirection.RIGHT, False)
-                        self.make_rotation(FaceDirection.RIGHT, False)
-                        self.make_rotation(FaceDirection.UP, False)
-                        self.make_rotation(FaceDirection.UP, False)
-                        self.make_rotation(FaceDirection.RIGHT, False)
-                        self.make_rotation(FaceDirection.RIGHT, False)
-                        self.make_rotation(FaceDirection.UP, True)
-                        self.make_rotation(FaceDirection.UP, True)
-                        self.make_rotation(FaceDirection.RIGHT, False)
-                        self.make_rotation(FaceDirection.UP, True)
-                        self.make_rotation(FaceDirection.UP, True)
-                        self.make_rotation(FaceDirection.RIGHT, False)
-                        self.make_rotation(FaceDirection.RIGHT, False)
 
-                    else:
-                        self.make_rotation(FaceDirection.RIGHT ,False)
-                        self.make_rotation(FaceDirection.UP ,False)
-                        self.make_rotation(FaceDirection.RIGHT ,True)
-                        self.make_rotation(FaceDirection.RIGHT ,True)
-                        self.make_rotation(FaceDirection.UP ,True)
-                        self.make_rotation(FaceDirection.RIGHT ,True)
-                        self.make_rotation(FaceDirection.UP , True)
-                        self.make_rotation(FaceDirection.RIGHT ,False)
-                        self.make_rotation(FaceDirection.UP , False)
-                        self.make_rotation(FaceDirection.RIGHT ,True)
-                        self.make_rotation(FaceDirection.UP ,True)
+                        self.make_rotation(FaceDirection.RIGHT, False)
+                        self.make_rotation(FaceDirection.RIGHT, False)
+                        self.make_rotation(FaceDirection.UP, True)
+                        self.make_rotation(FaceDirection.UP, True)
+                        self.make_rotation(FaceDirection.RIGHT, False)
+                        self.make_rotation(FaceDirection.UP, True)
+                        self.make_rotation(FaceDirection.UP, True)
+                        self.make_rotation(FaceDirection.RIGHT, False)
+                        self.make_rotation(FaceDirection.RIGHT, False)
+                        self.make_rotation(FaceDirection.UP, False)
+                        self.make_rotation(FaceDirection.UP, False)
+                        self.make_rotation(FaceDirection.RIGHT, False)
+                        self.make_rotation(FaceDirection.RIGHT, False)
+                        self.make_rotation(FaceDirection.UP, True)
+                        self.make_rotation(FaceDirection.UP, True)
+                        self.make_rotation(FaceDirection.RIGHT, False)
+                        self.make_rotation(FaceDirection.UP, True)
+                        self.make_rotation(FaceDirection.UP, True)
+                        self.make_rotation(FaceDirection.RIGHT, False)
+                        self.make_rotation(FaceDirection.RIGHT, False)
+                    elif self.faces[1].face_matrix[0][1] == self.faces[4].face_color and \
+                                    self.faces[2].face_matrix[0][1] == self.faces[3].face_color and \
+                                    self.faces[3].face_matrix[0][1] == self.faces[2].face_color:
+                        self.make_rotation(FaceDirection.UP, True)
+
+                        self.make_rotation(FaceDirection.RIGHT, False)
+                        self.make_rotation(FaceDirection.UP, False)
                         self.make_rotation(FaceDirection.RIGHT, True)
-                        self.make_rotation(FaceDirection.UP , False)
-                        self.make_rotation(FaceDirection.RIGHT ,True)
-                        self.make_rotation(FaceDirection.UP , False)
-                        self.make_rotation(FaceDirection.RIGHT , False)
+                        self.make_rotation(FaceDirection.RIGHT, True)
+                        self.make_rotation(FaceDirection.UP, True)
+                        self.make_rotation(FaceDirection.RIGHT, True)
+                        self.make_rotation(FaceDirection.UP, True)
+                        self.make_rotation(FaceDirection.RIGHT, False)
+                        self.make_rotation(FaceDirection.UP, False)
+                        self.make_rotation(FaceDirection.RIGHT, True)
+                        self.make_rotation(FaceDirection.UP, True)
+                        self.make_rotation(FaceDirection.RIGHT, True)
+                        self.make_rotation(FaceDirection.UP, False)
+                        self.make_rotation(FaceDirection.RIGHT, True)
+                        self.make_rotation(FaceDirection.UP, False)
+                        self.make_rotation(FaceDirection.RIGHT, False)
+                    elif self.faces[1].face_matrix[0][1] == self.faces[2].face_color and \
+                                    self.faces[2].face_matrix[0][1] == self.faces[1].face_color and \
+                                    self.faces[3].face_matrix[0][1] == self.faces[4].face_color:
+                        self.make_rotation(FaceDirection.UP, True)
+
+                        self.make_rotation(FaceDirection.BACK, False)
+                        self.make_rotation(FaceDirection.UP, False)
+                        self.make_rotation(FaceDirection.BACK, True)
+                        self.make_rotation(FaceDirection.BACK, True)
+                        self.make_rotation(FaceDirection.UP, True)
+                        self.make_rotation(FaceDirection.BACK, True)
+                        self.make_rotation(FaceDirection.UP, True)
+                        self.make_rotation(FaceDirection.BACK, False)
+                        self.make_rotation(FaceDirection.UP, False)
+                        self.make_rotation(FaceDirection.BACK, True)
+                        self.make_rotation(FaceDirection.UP, True)
+                        self.make_rotation(FaceDirection.BACK, True)
+                        self.make_rotation(FaceDirection.UP, False)
+                        self.make_rotation(FaceDirection.BACK, True)
+                        self.make_rotation(FaceDirection.UP, False)
+                        self.make_rotation(FaceDirection.BACK, False)
 
                 for _ in range(3):
                     if utils.is_cube_solved(self.faces):
@@ -651,6 +677,7 @@ class CFOPCube(RubikCube):
                 faces_solved = utils.get_solved_faces(self)
                 if len(faces_solved) == 1:
                     self.PLL_one_completed(faces_solved)
+                    return
 
     def solve(self):
         """
@@ -661,14 +688,14 @@ class CFOPCube(RubikCube):
         print("Bottom done")
         # print(f"Finished bottom : {self.moves_number}")
         # print("Middle : ")
+        # for face in self.faces:
+        #     print(face.face_matrix)
         self.solve_middle_layer()
         print("Middle done")
         # print(f"Finished middle : {self.moves_number}")
         # print("Top : ")
         self.OLL()
         print("OLL done")
-        for face in self.faces:
-            print(face.face_matrix)
         # print(f"OLL : {self.moves_number}")
         self.PLL()
         print("PLL done")

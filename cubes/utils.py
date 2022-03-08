@@ -275,7 +275,7 @@ def get_solved_faces(cube):
         faces_solved = [i - 1 for i in range(1, 5) if face_solved(cube.faces[i])]
         if faces_solved:
             if len(match_perfect_corners(cube.faces)) == 4:
-                break
+                return faces_solved
         cube.make_rotation(FaceDirection.UP, True)
         rotations += 1
-    return faces_solved
+    return []

@@ -28,18 +28,17 @@ def test():
 def main():
     try:
         rubik_cube = CFOPCube([
-            Color.WHITE, Color.BLUE, Color.GREEN, Color.BLUE, Color.WHITE, Color.WHITE, Color.YELLOW, Color.GREEN,
-            Color.ORANGE,
-            Color.BLUE, Color.ORANGE, Color.BLUE, Color.ORANGE, Color.RED, Color.YELLOW, Color.YELLOW, Color.RED,
+            Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE,
             Color.WHITE,
-            Color.RED, Color.RED, Color.GREEN, Color.BLUE, Color.BLUE, Color.ORANGE, Color.RED, Color.GREEN,
-            Color.WHITE,
-            Color.WHITE, Color.ORANGE, Color.YELLOW, Color.YELLOW, Color.ORANGE, Color.BLUE, Color.ORANGE, Color.RED,
+            Color.ORANGE, Color.GREEN, Color.ORANGE, Color.RED, Color.RED, Color.RED, Color.RED, Color.RED, Color.RED,
+            Color.GREEN, Color.ORANGE, Color.GREEN, Color.BLUE, Color.BLUE, Color.BLUE, Color.BLUE, Color.BLUE,
+            Color.BLUE,
+            Color.RED, Color.BLUE, Color.RED, Color.ORANGE, Color.ORANGE, Color.ORANGE, Color.ORANGE, Color.ORANGE,
             Color.ORANGE,
-            Color.RED, Color.RED, Color.RED, Color.WHITE, Color.GREEN, Color.GREEN, Color.YELLOW, Color.GREEN,
+            Color.BLUE, Color.RED, Color.BLUE, Color.GREEN, Color.GREEN, Color.GREEN, Color.GREEN, Color.GREEN,
             Color.GREEN,
-            Color.GREEN, Color.WHITE, Color.BLUE, Color.YELLOW, Color.YELLOW, Color.WHITE, Color.ORANGE, Color.YELLOW,
-            Color.BLUE
+            Color.YELLOW, Color.YELLOW, Color.YELLOW, Color.YELLOW, Color.YELLOW, Color.YELLOW, Color.YELLOW,
+            Color.YELLOW, Color.YELLOW,
         ])
     except utils.InvalidCubeConfiguration as cube_exception:
         print(cube_exception)
