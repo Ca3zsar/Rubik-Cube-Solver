@@ -1,51 +1,6 @@
-from enum import Enum
-import utils
+from .elements.CubeElements import FaceDirection, Color, CubeFace
+from . import utils
 import copy
-
-class FaceDirection(Enum):
-    UP = 0
-    LEFT = 1
-    FRONT = 2
-    RIGHT = 3
-    BACK = 4
-    DOWN = 5
-
-
-class Color(Enum):
-    WHITE = 0
-    RED = 1
-    BLUE = 2
-    ORANGE = 3
-    GREEN = 4
-    YELLOW = 5
-
-
-class CubeFace:
-    """
-    A class used to represent a cube face. It holds information such as:
-    - a matrix of values, each value corresponding to a color
-    - the color that this cube face should be at the ending of the algorithm
-    """
-
-    def __init__(self, facets: list, direction: FaceDirection):
-        # Create a matrix from the received list of values. The matrix should be of form 3x3
-        self.face_matrix = [[facets[i * 3], facets[i * 3 + 1], facets[i * 3 + 2]] for i in range(3)]
-
-        # Get the center color of this face
-        self.face_color = self.face_matrix[1][1]
-
-        # Set the direction of this face
-        self.face_direction = direction
-
-    def rotate_clockwise(self):
-        rotated = [list(reversed(column)) for column in zip(*self.face_matrix)]
-        self.face_matrix = rotated
-
-    def rotate_counter(self):
-        self.face_matrix = [row[::-1] for row in self.face_matrix]
-        rotated = [list(reversed(column)) for column in zip(*self.face_matrix[::-1])]
-        self.face_matrix = rotated
-
 
 class RubikCube:
     """
@@ -83,8 +38,16 @@ class RubikCube:
                              (FaceDirection.RIGHT, 'L', 2, 1), (FaceDirection.FRONT, 'L', 2, 1)]
     }
 
-    def __init__(self, configuration: list):
+    def __init__(self, configuration: list = None):
         self.moves_number = 0
+        self.last_move = None
+        self.moves = []
+
+        if not configuration:
+            self.face_length = 9
+            self.faces = [
+                CubeFace([color] * self.face_length, direction) for direction, color in zip(FaceDirection, Color)]
+            return
 
         if len(configuration) != 54:
             raise utils.InvalidCubeConfiguration("Invalid length")
@@ -106,8 +69,16 @@ class RubikCube:
         """
         Receive a chosen face and rotate it clockwise or counterclockwise.
         """
-        self.moves_number += 1
-        print(face, clockwise)
+        if type(face) != FaceDirection:
+            print(type(face))
+        if face != self.last_move:
+            self.moves_number += 1
+            self.last_move = face
+            self.moves.append((face, clockwise, 1))
+        else:
+            self.moves.pop()
+            self.moves.append((face, clockwise, 2))
+            self.last_move = None
 
         # Make a copy of the actual faces
         faces_copy = copy.deepcopy(self.faces)
@@ -145,4 +116,12 @@ class RubikCube:
 
         self.faces = faces_copy[:]
 
+    def __str__(self):
+        text = ''
+        for face in self.faces:
+            for line in face.face_matrix:
+                for col in line:
+                    text += f"{col}, "
+            text += '\n'
 
+        return text

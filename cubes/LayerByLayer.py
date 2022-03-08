@@ -1,8 +1,9 @@
-from CubeElements import FaceDirection, Color, RubikCube
-import utils
+from .elements.CubeElements import FaceDirection, Color
+from .Cube import RubikCube
+from . import utils
 
 
-class BeginnerCube(RubikCube):
+class  BeginnerCube(RubikCube):
     """
     A class used to represent a cube in a simple way.
     It has a list of 6 CubeFace objects, each representing a face of the cube.
@@ -254,6 +255,7 @@ class BeginnerCube(RubikCube):
 
     def solve_bottom_layer(self):
         self.form_up_cross()
+
         rotations = 0
         while rotations < 4:
             for face in [FaceDirection.LEFT, FaceDirection.FRONT, FaceDirection.RIGHT, FaceDirection.BACK]:
@@ -296,10 +298,11 @@ class BeginnerCube(RubikCube):
 
             if not found_on_third_layer:
                 for index in range(len(sides)):
-                    if self.faces[sides[index].value].face_matrix[1][2] == \
-                            self.faces[sides[(index + 1) % len(sides)].value].face_color and \
-                            self.faces[sides[(index + 1) % len(sides)].value].face_matrix[1][0] == \
-                            self.faces[sides[index].value].face_color:
+                    if (self.faces[sides[index].value].face_matrix[1][2] != self.faces[sides[index].value].face_color or
+                        self.faces[sides[(index + 1) % len(sides)].value].face_matrix[1][0] !=
+                        self.faces[sides[(index + 1) % len(sides)].value].face_color) and \
+                            self.faces[sides[index].value].face_matrix[1][2] != up_color and \
+                            self.faces[sides[(index + 1) % len(sides)].value].face_matrix[1][0] != up_color:
                         self.bring_third_layer_to_second(sides[index], sides[(index + 1) % len(sides)], 1)
                         break
 
@@ -311,7 +314,7 @@ class BeginnerCube(RubikCube):
                 self.form_final_cross(1)
             elif utils.is_vertical_line(self.faces[0]):
                 self.make_rotation(FaceDirection.UP, True)
-            elif utils.wanted_corner(self.faces[0]):
+            elif utils.up_corner(self.faces[0]):
                 self.form_final_cross(2)
             elif rotations := utils.any_corner(self.faces[0]):
                 for _ in range(rotations):
@@ -416,5 +419,6 @@ class BeginnerCube(RubikCube):
         """
         self.solve_bottom_layer()
         self.solve_middle_layer()
+
         self.solve_top_layer()
         self.finish_solving()
