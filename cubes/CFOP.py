@@ -604,58 +604,44 @@ class CFOPCube(RubikCube):
                             self.faces[2].face_matrix[0][1] == self.faces[4].face_color and \
                             self.faces[3].face_matrix[0][1] == self.faces[1].face_color:
                         print("Here")
-                        self.make_rotation(FaceDirection.RIGHT, True)
-                        self.make_rotation(FaceDirection.RIGHT, True)
-                        self.make_rotation(FaceDirection.LEFT, False)
-                        self.make_rotation(FaceDirection.LEFT, False)
-                        self.make_rotation(FaceDirection.UP, True)
-                        self.make_rotation(FaceDirection.RIGHT, True)
-                        self.make_rotation(FaceDirection.RIGHT, True)
-                        self.make_rotation(FaceDirection.LEFT, False)
-                        self.make_rotation(FaceDirection.LEFT, False)
+                        self.make_rotation(FaceDirection.RIGHT, False)
+                        self.make_rotation(FaceDirection.RIGHT, False)
                         self.make_rotation(FaceDirection.UP, True)
                         self.make_rotation(FaceDirection.UP, True)
-                        self.make_rotation(FaceDirection.RIGHT, True)
-                        self.make_rotation(FaceDirection.RIGHT, True)
-                        self.make_rotation(FaceDirection.LEFT, False)
-                        self.make_rotation(FaceDirection.LEFT, False)
+                        self.make_rotation(FaceDirection.RIGHT, False)
                         self.make_rotation(FaceDirection.UP, True)
-                        self.make_rotation(FaceDirection.RIGHT, True)
-                        self.make_rotation(FaceDirection.RIGHT, True)
-                        self.make_rotation(FaceDirection.LEFT, False)
-                        self.make_rotation(FaceDirection.LEFT, False)
-                    else:
+                        self.make_rotation(FaceDirection.UP, True)
+                        self.make_rotation(FaceDirection.RIGHT, False)
+                        self.make_rotation(FaceDirection.RIGHT, False)
                         self.make_rotation(FaceDirection.UP, False)
-
+                        self.make_rotation(FaceDirection.UP, False)
                         self.make_rotation(FaceDirection.RIGHT, False)
-                        self.make_rotation(FaceDirection.LEFT, True)
-
-                        self.make_rotation(FaceDirection.FRONT, True)
-
                         self.make_rotation(FaceDirection.RIGHT, False)
-                        self.make_rotation(FaceDirection.LEFT, True)
-                        self.make_rotation(FaceDirection.RIGHT, False)
-                        self.make_rotation(FaceDirection.LEFT, True)
-
-                        self.make_rotation(FaceDirection.BACK, True)
-
-                        self.make_rotation(FaceDirection.RIGHT, False)
-                        self.make_rotation(FaceDirection.LEFT, True)
-                        self.make_rotation(FaceDirection.RIGHT, False)
-                        self.make_rotation(FaceDirection.LEFT, True)
-
-                        self.make_rotation(FaceDirection.FRONT, True)
-
-                        self.make_rotation(FaceDirection.RIGHT, False)
-                        self.make_rotation(FaceDirection.LEFT, True)
-
                         self.make_rotation(FaceDirection.UP, True)
                         self.make_rotation(FaceDirection.UP, True)
+                        self.make_rotation(FaceDirection.RIGHT, False)
+                        self.make_rotation(FaceDirection.UP, True)
+                        self.make_rotation(FaceDirection.UP, True)
+                        self.make_rotation(FaceDirection.RIGHT, False)
+                        self.make_rotation(FaceDirection.RIGHT, False)
 
-                        self.make_rotation(FaceDirection.RIGHT, False)
-                        self.make_rotation(FaceDirection.LEFT, True)
-                        self.make_rotation(FaceDirection.RIGHT, False)
-                        self.make_rotation(FaceDirection.LEFT, True)
+                    else:
+                        self.make_rotation(FaceDirection.RIGHT ,False)
+                        self.make_rotation(FaceDirection.UP ,False)
+                        self.make_rotation(FaceDirection.RIGHT ,True)
+                        self.make_rotation(FaceDirection.RIGHT ,True)
+                        self.make_rotation(FaceDirection.UP ,True)
+                        self.make_rotation(FaceDirection.RIGHT ,True)
+                        self.make_rotation(FaceDirection.UP , True)
+                        self.make_rotation(FaceDirection.RIGHT ,False)
+                        self.make_rotation(FaceDirection.UP , False)
+                        self.make_rotation(FaceDirection.RIGHT ,True)
+                        self.make_rotation(FaceDirection.UP ,True)
+                        self.make_rotation(FaceDirection.RIGHT, True)
+                        self.make_rotation(FaceDirection.UP , False)
+                        self.make_rotation(FaceDirection.RIGHT ,True)
+                        self.make_rotation(FaceDirection.UP , False)
+                        self.make_rotation(FaceDirection.RIGHT , False)
 
                 for _ in range(3):
                     if utils.is_cube_solved(self.faces):
