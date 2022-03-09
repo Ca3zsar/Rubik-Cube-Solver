@@ -280,21 +280,33 @@ class  BeginnerCube(RubikCube):
 
         while not utils.is_middle_solved(self.faces[1:5]):
             found_on_third_layer = False
-            for index in range(len(sides)):
-                up_piece = self.faces[FaceDirection.UP.value].face_matrix[pieces[index][0]][pieces[index][1]]
+            matched_on_third_layer = False
+            for i in range(3):
+                found_on_third_layer = False
+                matched_on_third_layer = False
+                for index in range(len(sides)):
+                    up_piece = self.faces[FaceDirection.UP.value].face_matrix[pieces[index][0]][pieces[index][1]]
 
-                if self.faces[sides[index].value].face_matrix[0][1] == self.faces[sides[index].value].face_color:
-                    if up_piece != up_color:
-                        found_on_third_layer = True
+                    if self.faces[sides[index].value].face_matrix[0][1] != up_color:
+                        if self.faces[sides[index].value].face_matrix[0][1] == self.faces[sides[index].value].face_color:
+                            if up_piece != up_color:
+                                matched_on_third_layer = True
+                                found_on_third_layer = True
 
-                        if up_piece == self.faces[sides[index - 1].value].face_color == up_piece:
-                            face_to_move = sides[index - 1]
-                            direction = 0
+                                if up_piece == self.faces[sides[index - 1].value].face_color == up_piece:
+                                    face_to_move = sides[index - 1]
+                                    direction = 0
+                                else:
+                                    face_to_move = sides[(index + 1) % len(sides)]
+                                    direction = 1
+
+                                self.bring_third_layer_to_second(sides[index], face_to_move, direction)
                         else:
-                            face_to_move = sides[(index + 1) % len(sides)]
-                            direction = 1
+                            if up_piece != up_color:
+                                found_on_third_layer = True
 
-                        self.bring_third_layer_to_second(sides[index], face_to_move, direction)
+                if not matched_on_third_layer:
+                    self.make_rotation(FaceDirection.UP, True)
 
             if not found_on_third_layer:
                 for index in range(len(sides)):

@@ -58,7 +58,9 @@ class CFOPCube(RubikCube):
         sign = lambda x: (1, -1)[x < 0]
 
         while color_number < 4:
-            for i in range(1, 5):
+            i = 1
+            #In while e problema la diff ( caz back cu left)
+            while i < 5:
                 if self.faces[0].face_matrix[positions[i - 1][0]][positions[i - 1][1]] == down_color:
                     diff = colors.index(self.faces[i].face_color) - colors.index(self.faces[i].face_matrix[0][1])
 
@@ -69,17 +71,22 @@ class CFOPCube(RubikCube):
 
                     for _ in range(abs(diff)):
                         self.make_rotation(FaceDirection.UP, direction)
+                    to_rotate = sides[(i - 1 - diff) % 4].value
 
-                    self.make_rotation(self.faces[sides[(i - 1 + diff) % 4].value].face_direction, True)
-                    self.make_rotation(self.faces[sides[(i - 1 + diff) % 4].value].face_direction, True)
+                    self.make_rotation(self.faces[to_rotate].face_direction, True)
+                    self.make_rotation(self.faces[to_rotate].face_direction, True)
+
+                    i = 1
+                else:
+                    i += 1
 
             for index, face in enumerate(sides):
                 if self.faces[face.value].face_matrix[1][0] == down_color:
                     face_to_check = sides[index - 1]
 
-                    if self.faces[face_to_check.value].face_matrix[1][2] == self.faces[index].face_color:
+                    if self.faces[face_to_check.value].face_matrix[1][2] == self.faces[face.value].face_color:
                         self.make_rotation(FaceDirection.DOWN, False)
-                        self.make_rotation(face_to_check, False)
+                        self.make_rotation(face_to_check, True)
                         self.make_rotation(FaceDirection.DOWN, True)
                     elif self.faces[face_to_check.value].face_matrix[1][2] == \
                             self.faces[face_to_check.value].face_color:
@@ -89,36 +96,34 @@ class CFOPCube(RubikCube):
                         diff = colors.index(self.faces[face_to_check.value].face_color) - colors.index(other_color)
                         direction = diff > 0
                         for _ in range(abs(diff)):
-                            self.make_rotation(FaceDirection.DOWN, not direction)
+                            self.make_rotation(FaceDirection.DOWN, direction)
 
                         self.make_rotation(face_to_check, True)
 
                         for _ in range(abs(diff)):
-                            self.make_rotation(FaceDirection.DOWN, direction)
-
-                    color_number += 1
+                            self.make_rotation(FaceDirection.DOWN, not direction)
 
                 if self.faces[face.value].face_matrix[1][2] == down_color:
                     face_to_check = sides[(index + 1) % 4]
 
-                    if self.faces[face_to_check.value].face_matrix[1][0] == self.faces[index].face_color:
-                        self.make_rotation(face, True)
+                    if self.faces[face_to_check.value].face_matrix[1][0] == self.faces[face.value].face_color:
+                        self.make_rotation(FaceDirection.DOWN, True)
+                        self.make_rotation(face_to_check, False)
+                        self.make_rotation(FaceDirection.DOWN, False)
                     elif self.faces[face_to_check.value].face_matrix[1][0] == \
                             self.faces[face_to_check.value].face_color:
-                        self.make_rotation(face_to_check, True)
+                        self.make_rotation(face_to_check, False)
                     else:
                         other_color = self.faces[face_to_check.value].face_matrix[1][0]
                         diff = colors.index(self.faces[face_to_check.value].face_color) - colors.index(other_color)
                         direction = diff > 0
                         for _ in range(abs(diff)):
-                            self.make_rotation(FaceDirection.DOWN, not direction)
+                            self.make_rotation(FaceDirection.DOWN, direction)
 
                         self.make_rotation(face_to_check, False)
 
                         for _ in range(abs(diff)):
-                            self.make_rotation(FaceDirection.DOWN, direction)
-
-                    color_number += 1
+                            self.make_rotation(FaceDirection.DOWN, not direction)
 
                 if self.faces[face.value].face_matrix[0][1] == down_color:
                     next_face = self.faces[sides[(index + 1) % 4].value]
@@ -155,12 +160,15 @@ class CFOPCube(RubikCube):
                         self.make_rotation(face, True)
 
             color_number = 0
-            for index, position in enumerate(positions):
+            for index, position in enumerate(down_pos):
                 if self.faces[FaceDirection.DOWN.value].face_matrix[position[0]][position[1]] == down_color:
                     if self.faces[sides[index].value].face_matrix[2][1] == self.faces[sides[index].value].face_color:
                         color_number += 1
                     else:
-                        self.make_rotation(sides[index],True)
+                        self.make_rotation(sides[index], True)
+
+            # print(self)
+            # print("----------------------------------")
 
 
     def bring_corners_down(self):
@@ -275,21 +283,33 @@ class CFOPCube(RubikCube):
 
         while not utils.is_middle_solved(self.faces[1:5]):
             found_on_third_layer = False
-            for index in range(len(sides)):
-                up_piece = self.faces[FaceDirection.UP.value].face_matrix[pieces[index][0]][pieces[index][1]]
+            matched_on_third_layer = False
+            for i in range(3):
+                found_on_third_layer = False
+                matched_on_third_layer = False
+                for index in range(len(sides)):
+                    up_piece = self.faces[FaceDirection.UP.value].face_matrix[pieces[index][0]][pieces[index][1]]
 
-                if self.faces[sides[index].value].face_matrix[0][1] == self.faces[sides[index].value].face_color:
-                    if up_piece != up_color:
-                        found_on_third_layer = True
+                    if self.faces[sides[index].value].face_matrix[0][1] != up_color:
+                        if self.faces[sides[index].value].face_matrix[0][1] == self.faces[sides[index].value].face_color:
+                            if up_piece != up_color:
+                                matched_on_third_layer = True
+                                found_on_third_layer = True
 
-                        if up_piece == self.faces[sides[index - 1].value].face_color == up_piece:
-                            face_to_move = sides[index - 1]
-                            direction = 0
+                                if up_piece == self.faces[sides[index - 1].value].face_color == up_piece:
+                                    face_to_move = sides[index - 1]
+                                    direction = 0
+                                else:
+                                    face_to_move = sides[(index + 1) % len(sides)]
+                                    direction = 1
+
+                                self.bring_third_layer_to_second(sides[index], face_to_move, direction)
                         else:
-                            face_to_move = sides[(index + 1) % len(sides)]
-                            direction = 1
+                            if up_piece != up_color:
+                                found_on_third_layer = True
 
-                        self.bring_third_layer_to_second(sides[index], face_to_move, direction)
+                if not matched_on_third_layer:
+                    self.make_rotation(FaceDirection.UP, True)
 
             if not found_on_third_layer:
                 for index in range(len(sides)):
@@ -686,6 +706,10 @@ class CFOPCube(RubikCube):
         # print("Bottom : ")
         self.solve_bottom_layer()
         print("Bottom done")
+        # for face in self.faces:
+        #     for facet in face.face_matrix:
+        #         print(facet, end=' ')
+        #     print()
         # print(f"Finished bottom : {self.moves_number}")
         # print("Middle : ")
         # for face in self.faces:
