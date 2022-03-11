@@ -701,181 +701,215 @@ class CFOPCube(RubikCube):
 
     def f2l(self):
         down_color = self.faces[5].face_color
+        up_color = self.faces[0].face_color
         sides = [FaceDirection.LEFT, FaceDirection.FRONT, FaceDirection.RIGHT, FaceDirection.BACK]
 
         positions = [(2, 1), (1, 2), (0, 1), (1, 0)]
         corners = [(2, 0), (2, 2), (0, 2), (0, 0)]
         down_corners = [(0, 0), (0, 2), (2, 2), (2, 0)]
         case_3_pos = [(0, 1), (1, 0), (2, 1), (1, 2)]
-        rotations = 0
+        self.movement_made = False
+        while not utils.is_middle_solved(self.faces[1:5]) or not utils.face_solved(self.faces[5]):
+            rotations = 0
+            while rotations < 4:
+                self.movement_made = False
+                for index, side in enumerate(sides):
+                    next_face = sides[(index + 1) % 4]
+                    prev_face = sides[index - 1]
 
-        while not utils.is_middle_solved(self.faces[1:5]) and not utils.face_solved(self.faces[5]):
-        # while rotations < 4:
+                    if self.faces[side.value].face_matrix[0][2] == down_color and \
+                            self.faces[0].face_matrix[corners[index][0]][corners[index][1]] == self.faces[side.value].face_color and \
+                            self.faces[next_face.value].face_matrix[0][0] == self.faces[next_face.value].face_color:
+
+                        if self.faces[next_face.value].face_matrix[0][1] == self.faces[next_face.value].face_color and \
+                                self.faces[0].face_matrix[positions[index][0]][positions[index][1]] == self.faces[side.value].face_color:
+                            f2l.f2l_1(self, next_face)
+
+                        elif self.faces[prev_face.value].face_matrix[0][1] == self.faces[side.value].face_color and \
+                                self.faces[0].face_matrix[case_3_pos[index][0]][case_3_pos[index][1]] == self.faces[next_face.value].face_color:
+                            f2l.f2l_3(self, side)
+
+                        elif self.faces[sides[index - 2].value].face_matrix[0][1] == self.faces[next_face.value].face_color and \
+                                self.faces[0].face_matrix[case_3_pos[index - 1][0]][case_3_pos[index - 1][1]] == self.faces[side.value].face_color:
+                            f2l.f2l_5(self, next_face)
+
+                        elif self.faces[prev_face.value].face_matrix[0][1] == self.faces[next_face.value].face_color and \
+                                self.faces[0].face_matrix[case_3_pos[index][0]][case_3_pos[index][1]] == self.faces[side.value].face_color:
+                            f2l.f2l_7(self, next_face)
+
+                        elif self.faces[sides[index - 2].value].face_matrix[0][1] == self.faces[side.value].face_color and \
+                                self.faces[0].face_matrix[case_3_pos[index - 1][0]][case_3_pos[index - 1][1]] == self.faces[next_face.value].face_color:
+                            f2l.f2l_9(self, next_face, side)
+
+                        elif self.faces[next_face.value].face_matrix[0][1] == self.faces[side.value].face_color and \
+                                self.faces[0].face_matrix[positions[index][0]][positions[index][1]] == self.faces[next_face.value].face_color:
+                            f2l.f2l_11(self, next_face, side)
+
+                        elif self.faces[side.value].face_matrix[0][1] == self.faces[side.value].face_color and \
+                                self.faces[0].face_matrix[positions[index-1][0]][positions[index-1][1]] == self.faces[next_face.value].face_color:
+                            f2l.f2l_13(self, side)
+
+                        elif self.faces[side.value].face_matrix[0][1] == self.faces[next_face.value].face_color and \
+                                self.faces[0].face_matrix[positions[index - 1][0]][positions[index-1][1]] == self.faces[side.value].face_color:
+                            f2l.f2l_15(self, next_face, prev_face, sides[(index+2) % 4])
+
+                        elif self.faces[side.value].face_matrix[1][2] == self.faces[side.value].face_color and \
+                                self.faces[next_face.value].face_matrix[1][0] == self.faces[next_face.value].face_color:
+                            f2l.f2l_33(self, next_face)
+
+                        elif self.faces[side.value].face_matrix[1][2] == self.faces[next_face.value].face_color and \
+                                self.faces[next_face.value].face_matrix[1][0] == self.faces[side.value].face_color:
+                            f2l.f2l_35(self, next_face, side)
+
+                    elif self.faces[side.value].face_matrix[0][2] == self.faces[side.value].face_color and \
+                            self.faces[0].face_matrix[corners[index][0]][corners[index][1]] == self.faces[next_face.value].face_color and \
+                            self.faces[next_face.value].face_matrix[0][0] == down_color:
+                        if self.faces[side.value].face_matrix[0][1] == self.faces[side.value].face_color and \
+                                self.faces[0].face_matrix[positions[index-1][0]][positions[index-1][1]] == self.faces[next_face.value].face_color:
+                            f2l.f2l_2(self, side)
+
+                        elif self.faces[sides[index - 2].value].face_matrix[0][1] == self.faces[next_face.value].face_color and \
+                                self.faces[0].face_matrix[case_3_pos[index - 1][0]][case_3_pos[index - 1][1]] == self.faces[side.value].face_color:
+                            f2l.f2l_4(self, next_face)
+
+                        elif self.faces[prev_face.value].face_matrix[0][1] == self.faces[side.value].face_color and \
+                                self.faces[0].face_matrix[case_3_pos[index][0]][case_3_pos[index][1]] == self.faces[next_face.value].face_color:
+                            f2l.f2l_6(self, next_face, side)
+
+                        elif self.faces[sides[index - 2].value].face_matrix[0][1] == self.faces[side.value].face_color and \
+                                self.faces[0].face_matrix[case_3_pos[index - 1][0]][case_3_pos[index - 1][1]] == self.faces[next_face.value].face_color:
+                            f2l.f2l_8(self, side)
+
+                        elif self.faces[prev_face.value].face_matrix[0][1] == self.faces[next_face.value].face_color and \
+                                self.faces[0].face_matrix[case_3_pos[index][0]][case_3_pos[index][1]] == self.faces[side.value].face_color:
+                            f2l.f2l_10(self, next_face)
+
+                        elif self.faces[side.value].face_matrix[0][1] == self.faces[next_face.value].face_color and \
+                                self.faces[0].face_matrix[positions[index - 1][0]][positions[index - 1][1]] == self.faces[side.value].face_color:
+                            f2l.f2l_12(self, next_face)
+
+                        elif self.faces[next_face.value].face_matrix[0][1] == self.faces[next_face.value].face_color and \
+                                self.faces[0].face_matrix[positions[index][0]][positions[index][1]] == self.faces[side.value].face_color:
+                            f2l.f2l_14(self, next_face)
+
+                        elif self.faces[next_face.value].face_matrix[0][1] == self.faces[side.value].face_color and \
+                                self.faces[0].face_matrix[positions[index][0]][positions[index][1]] == self.faces[next_face.value].face_color:
+                            f2l.f2l_16(self, next_face, side)
+
+                        elif self.faces[side.value].face_matrix[1][2] == self.faces[side.value].face_color and \
+                                self.faces[next_face.value].face_matrix[1][0] == self.faces[next_face.value].face_color:
+                            f2l.f2l_34(self, side)
+
+                        elif self.faces[side.value].face_matrix[1][2] == self.faces[next_face.value].face_color and \
+                                self.faces[next_face.value].face_matrix[1][0] == self.faces[side.value].face_color:
+                            f2l.f2l_36(self, next_face, side)
+
+                    elif self.faces[side.value].face_matrix[0][2] == self.faces[next_face.value].face_color and\
+                            self.faces[0].face_matrix[corners[index][0]][corners[index][1]] == down_color and\
+                            self.faces[next_face.value].face_matrix[0][0] == self.faces[side.value].face_color:
+
+                        if self.faces[next_face.value].face_matrix[0][1] == self.faces[next_face.value].face_color and \
+                             self.faces[0].face_matrix[positions[index][0]][positions[index][1]] == self.faces[side.value].face_color:
+                            f2l.f2l_17(self, next_face)
+                        elif self.faces[side.value].face_matrix[0][1] == self.faces[side.value].face_color and \
+                                self.faces[0].face_matrix[positions[index - 1][0]][positions[index - 1][1]] == self.faces[next_face.value].face_color:
+                            f2l.f2l_18(self, side)
+                        elif self.faces[sides[index - 2].value].face_matrix[0][1] == self.faces[next_face.value].face_color and \
+                                self.faces[0].face_matrix[case_3_pos[index - 1][0]][case_3_pos[index - 1][1]] == self.faces[side.value].face_color:
+                            f2l.f2l_19(self, next_face, side)
+                        elif self.faces[prev_face.value].face_matrix[0][1] == self.faces[side.value].face_color and \
+                                self.faces[0].face_matrix[case_3_pos[index][0]][case_3_pos[index][1]] == self.faces[next_face.value].face_color:
+                            f2l.f2l_20(self, next_face, side)
+                        elif self.faces[prev_face.value].face_matrix[0][1] == self.faces[next_face.value].face_color and \
+                                self.faces[0].face_matrix[case_3_pos[index][0]][case_3_pos[index][1]] == self.faces[side.value].face_color:
+                            f2l.f2l_21(self, next_face)
+
+                        elif self.faces[sides[index - 2].value].face_matrix[0][1] == self.faces[side.value].face_color and \
+                                self.faces[0].face_matrix[case_3_pos[index - 1][0]][case_3_pos[index - 1][1]] == self.faces[next_face.value].face_color:
+                            f2l.f2l_22(self, prev_face, side)
+                        elif self.faces[side.value].face_matrix[0][1] == self.faces[next_face.value].face_color and \
+                                self.faces[0].face_matrix[positions[index - 1][0]][positions[index - 1][1]] == self.faces[side.value].face_color:
+                            f2l.f2l_23(self, next_face)
+                        elif self.faces[next_face.value].face_matrix[0][1] == self.faces[side.value].face_color and \
+                                self.faces[0].face_matrix[positions[index][0]][positions[index][1]] == self.faces[next_face.value].face_color:
+                            f2l.f2l_24(self, next_face, side, prev_face)
+                        elif self.faces[side.value].face_matrix[1][2] == self.faces[next_face.value].face_color and \
+                                self.faces[next_face.value].face_matrix[1][0] == self.faces[side.value].face_color:
+                            f2l.f2l_31(self, next_face, side)
+
+                        elif self.faces[side.value].face_matrix[1][2] == self.faces[side.value].face_color and \
+                                self.faces[next_face.value].face_matrix[1][0] == self.faces[next_face.value].face_color:
+                            f2l.f2l_32(self, next_face)
+
+                    elif utils.is_right_down_cube(down_corners[index][0], down_corners[index][1], self.faces[5], self.faces[side.value], self.faces[next_face.value]):
+                        if self.faces[next_face.value].face_matrix[0][1] == self.faces[next_face.value].face_color and \
+                                self.faces[0].face_matrix[positions[index][0]][positions[index][1]] == self.faces[side.value].face_color:
+                            f2l.f2l_25(self, next_face, side)
+                        elif self.faces[side.value].face_matrix[0][1] == self.faces[side.value].face_color and \
+                                self.faces[0].face_matrix[positions[index - 1][0]][positions[index - 1][1]] == self.faces[next_face.value].face_color:
+                            f2l.f2l_26(self, next_face, side)
+                        elif self.faces[side.value].face_matrix[1][2] == self.faces[next_face.value].face_color and \
+                                self.faces[next_face.value].face_matrix[1][0] == self.faces[side.value].face_color:
+                            f2l.f2l_38(self, next_face, side)
+
+                    elif self.faces[side.value].face_matrix[2][2] == down_color and \
+                            self.faces[next_face.value].face_matrix[2][0] == self.faces[side.value].face_color and \
+                            self.faces[5].face_matrix[down_corners[index][0]][down_corners[index][1]] == self.faces[next_face.value].face_color:
+
+                        if self.faces[next_face.value].face_matrix[0][1] == self.faces[next_face.value].face_color and \
+                                self.faces[0].face_matrix[positions[index][0]][positions[index][1]] == self.faces[side.value].face_color:
+                            f2l.f2l_27(self, next_face, side)
+                        elif self.faces[side.value].face_matrix[0][1] == self.faces[side.value].face_color and \
+                                self.faces[0].face_matrix[positions[index - 1][0]][positions[index - 1][1]] == self.faces[next_face.value].face_color:
+                            f2l.f2l_29(self, next_face, side)
+
+                        elif self.faces[side.value].face_matrix[1][2] == self.faces[side.value].face_color and \
+                                self.faces[next_face.value].face_matrix[1][0] == self.faces[next_face.value].face_color:
+                            f2l.f2l_39(self, next_face)
+                        elif self.faces[side.value].face_matrix[1][2] == self.faces[next_face.value].face_color and \
+                                self.faces[next_face.value].face_matrix[1][0] == self.faces[side.value].face_color:
+                            f2l.f2l_41(self, next_face, side)
+                    elif self.faces[side.value].face_matrix[2][2] == self.faces[next_face.value].face_color and \
+                            self.faces[next_face.value].face_matrix[2][0] == down_color and \
+                            self.faces[5].face_matrix[down_corners[index][0]][down_corners[index][1]] == self.faces[side.value].face_color:
+                        if self.faces[side.value].face_matrix[0][1] == self.faces[side.value].face_color and \
+                             self.faces[0].face_matrix[positions[index - 1][0]][positions[index - 1][1]] == self.faces[next_face.value].face_color:
+                            f2l.f2l_28(self, next_face, side)
+
+                        elif self.faces[next_face.value].face_matrix[0][1] == self.faces[next_face.value].face_color and \
+                                self.faces[0].face_matrix[positions[index][0]][positions[index][1]] == self.faces[side.value].face_color:
+                            f2l.f2l_30(self, next_face)
+                        elif self.faces[side.value].face_matrix[1][2] == self.faces[side.value].face_color and \
+                                self.faces[next_face.value].face_matrix[1][0] == self.faces[next_face.value].face_color:
+                            f2l.f2l_40(self, next_face)
+                        elif self.faces[side.value].face_matrix[1][2] == self.faces[next_face.value].face_color and \
+                                self.faces[next_face.value].face_matrix[1][0] == self.faces[side.value].face_color:
+                            f2l.f2l_42(self, next_face, prev_face, side)
+                if not self.movement_made:
+                    self.make_rotation(FaceDirection.UP, True)
+                    rotations += 1
+
+
+            moved = False
+            for index, side in enumerate(sides):
+                if (self.faces[side.value].face_matrix[1][2] != self.faces[side.value].face_color or
+                    self.faces[sides[(index + 1) % 4].value].face_matrix[1][0] !=
+                    self.faces[sides[(index + 1) % 4].value].face_color) and \
+                        self.faces[sides[index].value].face_matrix[1][2] != up_color and \
+                        self.faces[sides[(index + 1) % 4].value].face_matrix[1][0] != up_color:
+                    self.bring_third_layer_to_second(sides[index], sides[(index + 1) % 4], True)
+                    moved = True
+                    break
+
+            if moved:
+                continue
+
             for index, side in enumerate(sides):
                 next_face = sides[(index + 1) % 4]
-                prev_face = sides[index - 1]
-                if self.faces[side.value].face_matrix[0][2] == down_color and \
-                        self.faces[0].face_matrix[corners[index][0]][corners[index][1]] == self.faces[side.value].face_color and \
-                        self.faces[next_face.value].face_matrix[0][0] == self.faces[next_face.value].face_color:
-
-                    if self.faces[next_face.value].face_matrix[0][1] == self.faces[next_face.value].face_color and \
-                            self.faces[0].face_matrix[positions[index][0]][positions[index][1]] == self.faces[side.value].face_color:
-                        f2l.f2l_1(self, next_face)
-
-                    elif self.faces[prev_face.value].face_matrix[0][1] == self.faces[side.value].face_color and \
-                            self.faces[0].face_matrix[case_3_pos[index][0]][case_3_pos[index][1]] == self.faces[next_face.value].face_color:
-                        f2l.f2l_3(self, side)
-
-                    elif self.faces[sides[index - 2].value].face_matrix[0][1] == self.faces[next_face.value].face_color and \
-                            self.faces[0].face_matrix[case_3_pos[index - 1][0]][case_3_pos[index - 1][1]] == self.faces[side.value].face_color:
-                        f2l.f2l_5(self, next_face)
-
-                    elif self.faces[prev_face.value].face_matrix[0][1] == self.faces[next_face.value].face_color and \
-                            self.faces[0].face_matrix[case_3_pos[index][0]][case_3_pos[index][1]] == self.faces[side.value].face_color:
-                        f2l.f2l_7(self, next_face)
-
-                    elif self.faces[sides[index - 2].value].face_matrix[0][1] == self.faces[side.value].face_color and \
-                            self.faces[0].face_matrix[case_3_pos[index - 1][0]][case_3_pos[index - 1][1]] == self.faces[next_face.value].face_color:
-                        f2l.f2l_9(self, next_face, side)
-
-                    elif self.faces[next_face.value].face_matrix[0][1] == self.faces[side.value].face_color and \
-                            self.faces[0].face_matrix[positions[index][0]][positions[index][1]] == self.faces[next_face.value].face_color:
-                        f2l.f2l_11(self, next_face, side)
-
-                    elif self.faces[side.value].face_matrix[0][1] == self.faces[side.value].face_color and \
-                            self.faces[0].face_matrix[positions[index-1][0]][positions[index][1]] == self.faces[next_face.value].face_color:
-                        f2l.f2l_13(self, side)
-
-                    elif self.faces[side.value].face_matrix[0][1] == self.faces[next_face.value].face_color and \
-                            self.faces[0].face_matrix[positions[index - 1][0]][positions[index][1]] == self.faces[side.value].face_color:
-                        f2l.f2l_15(self, next_face, prev_face, sides[(index+2) % 4])
-
-                    elif self.faces[side.value].face_matrix[1][2] == self.faces[side.value].face_color and \
-                            self.faces[next_face.value].face_matrix[1][0] == self.faces[next_face.value].face_color:
-                        f2l.f2l_33(self, next_face)
-
-                    elif self.faces[side.value].face_matrix[1][2] == self.faces[next_face.value].face_color and \
-                            self.faces[next_face.value].face_matrix[1][0] == self.faces[side.value].face_color:
-                        f2l.f2l_35(self, next_face, side)
-
-                elif self.faces[side.value].face_matrix[0][2] == self.faces[side.value].face_color and \
-                        self.faces[0].face_matrix[corners[index][0]][corners[index][1]] == self.faces[next_face.value].face_color and \
-                        self.faces[next_face.value].face_matrix[0][0] == down_color:
-                    if self.faces[side.value].face_matrix[0][1] == self.faces[side.value].face_color and \
-                            self.faces[0].face_matrix[positions[index-1][0]][positions[index-1][1]] == self.faces[next_face.value].face_color:
-                        f2l.f2l_2(self, side)
-                    elif self.faces[sides[index - 2].value].face_matrix[0][1] == self.faces[next_face.value].face_color and \
-                            self.faces[0].face_matrix[case_3_pos[index - 1][0]][case_3_pos[index - 1][1]] == self.faces[side.value].face_color:
-                        f2l.f2l_4(self, next_face)
-                    elif self.faces[prev_face.value].face_matrix[0][1] == self.faces[side.value].face_color and \
-                            self.faces[0].face_matrix[case_3_pos[index][0]][case_3_pos[index][1]] == self.faces[next_face.value].face_color:
-                        f2l.f2l_6(self, next_face, side)
-                    elif self.faces[sides[index - 2].value].face_matrix[0][1] == self.faces[side.value].face_color and \
-                            self.faces[0].face_matrix[case_3_pos[index - 1][0]][case_3_pos[index - 1][1]] == self.faces[next_face.value].face_color:
-                        f2l.f2l_8(self, side)
-                    elif self.faces[prev_face.value].face_matrix[0][1] == self.faces[next_face.value].face_color and \
-                            self.faces[0].face_matrix[case_3_pos[index][0]][case_3_pos[index][1]] == self.faces[side.value].face_color:
-                        f2l.f2l_10(self, next_face)
-                    elif self.faces[side.value].face_matrix[0][1] == self.faces[next_face.value].face_color and \
-                            self.faces[0].face_matrix[positions[index - 1][0]][positions[index - 1][1]] == self.faces[side.value].face_color:
-                        f2l.f2l_12(self, next_face)
-                    elif self.faces[next_face.value].face_matrix[0][1] == self.faces[next_face.value].face_color and \
-                            self.faces[0].face_matrix[positions[index][0]][positions[index][1]] == self.faces[side.value].face_color:
-                        f2l.f2l_14(self, next_face)
-                    elif self.faces[next_face.value].face_matrix[0][1] == self.faces[side.value].face_color and \
-                            self.faces[0].face_matrix[positions[index][0]][positions[index][1]] == self.faces[next_face.value].face_color:
-                        f2l.f2l_16(self, next_face, side)
-                    elif self.faces[side.value].face_matrix[1][2] == self.faces[side.value].face_color and \
-                            self.faces[next_face.value].face_matrix[1][0] == self.faces[next_face.value].face_color:
-                        f2l.f2l_34(self, side)
-                    elif self.faces[side.value].face_matrix[1][2] == self.faces[next_face.value].face_color and \
-                            self.faces[next_face.value].face_matrix[1][0] == self.faces[side.value].face_color:
-                        f2l.f2l_36(self, next_face, side)
-
-                elif self.faces[side.value].face_matrix[0][2] == self.faces[next_face.value].face_color and\
-                        self.faces[0].face_matrix[corners[index][0]][corners[index][1]] == down_color and\
-                        self.faces[next_face.value].face_matrix[0][0] == self.faces[side.value].face_color:
-
-                    if self.faces[next_face.value].face_matrix[0][1] == self.faces[next_face.value].face_color and \
-                         self.faces[0].face_matrix[positions[index][0]][positions[index][1]] == self.faces[side.value].face_color:
-                        f2l.f2l_17(self, next_face)
-                    elif self.faces[side.value].face_matrix[0][1] == self.faces[side.value].face_color and \
-                            self.faces[0].face_matrix[positions[index - 1][0]][positions[index - 1][1]] == self.faces[next_face.value].face_color:
-                        f2l.f2l_18(self, side)
-                    elif self.faces[sides[index - 2].value].face_matrix[0][1] == self.faces[next_face.value].face_color and \
-                            self.faces[0].face_matrix[case_3_pos[index - 1][0]][case_3_pos[index - 1][1]] == self.faces[side.value].face_color:
-                        f2l.f2l_19(self, next_face, side)
-                    elif self.faces[prev_face.value].face_matrix[0][1] == self.faces[side.value].face_color and \
-                            self.faces[0].face_matrix[case_3_pos[index][0]][case_3_pos[index][1]] == self.faces[next_face.value].face_color:
-                        f2l.f2l_20(self, next_face, side)
-                    elif self.faces[prev_face.value].face_matrix[0][1] == self.faces[next_face.value].face_color and \
-                            self.faces[0].face_matrix[case_3_pos[index][0]][case_3_pos[index][1]] == self.faces[side.value].face_color:
-                        f2l.f2l_21(self, next_face)
-                    elif self.faces[sides[index - 2].value].face_matrix[0][1] == self.faces[side.value].face_color and \
-                            self.faces[0].face_matrix[case_3_pos[index - 1][0]][case_3_pos[index - 1][1]] == self.faces[next_face.value].face_color:
-                        f2l.f2l_22(self, prev_face, side)
-                    elif self.faces[side.value].face_matrix[0][1] == self.faces[next_face.value].face_color and \
-                            self.faces[0].face_matrix[positions[index - 1][0]][positions[index -1 ][1]] == self.faces[side.value].face_color:
-                        f2l.f2l_23(self, next_face)
-                    elif self.faces[next_face.value].face_matrix[0][1] == self.faces[side.value].face_color and \
-                            self.faces[0].face_matrix[positions[index][0]][positions[index][1]] == self.faces[next_face.value].face_color:
-                        f2l.f2l_24(self, next_face, side, prev_face)
-                    elif self.faces[side.value].face_matrix[1][2] == self.faces[next_face.value].face_color and \
-                            self.faces[next_face.value].face_matrix[1][0] == self.faces[side.value].face_color:
-                        f2l.f2l_31(self, next_face, side)
-                    elif self.faces[side.value].face_matrix[1][2] == self.faces[side.value].face_color and \
-                            self.faces[next_face.value].face_matrix[1][0] == self.faces[next_face.value].face_color:
-                        f2l.f2l_32(self, next_face)
-
-                elif utils.is_right_down_cube(down_corners[index][0], down_corners[index][1], self.faces[5], self.faces[side.value], self.faces[next_face.value]):
-                    if self.faces[next_face.value].face_matrix[0][1] == self.faces[next_face.value].face_color and \
-                            self.faces[0].face_matrix[positions[index][0]][positions[index][1]] == self.faces[side.value].face_color:
-                        f2l.f2l_25(self, next_face, side)
-                    elif self.faces[side.value].face_matrix[0][1] == self.faces[side.value].face_color and \
-                            self.faces[0].face_matrix[positions[index - 1][0]][positions[index - 1][1]] == self.faces[next_face.value].face_color:
-                        f2l.f2l_26(self, next_face, side)
-                    elif self.faces[side.value].face_matrix[1][2] == self.faces[next_face.value].face_color and \
-                            self.faces[next_face.value].face_matrix[1][0] == self.faces[side.value].face_color:
-                        f2l.f2l_38(self, next_face, side)
-                elif self.faces[side.value].face_matrix[2][2] == down_color and \
-                        self.faces[next_face.value].face_matrix[2][0] == self.faces[side.value].face_color and \
-                        self.faces[5].face_matrix[down_corners[index][0]][down_corners[index][1]] == self.faces[next_face.value].face_color:
-                    if self.faces[next_face.value].face_matrix[0][1] == self.faces[next_face.value].face_color and \
-                            self.faces[0].face_matrix[positions[index][0]][positions[index][1]] == self.faces[side.value].face_color:
-                        f2l.f2l_27(self, next_face, side)
-                    elif self.faces[side.value].face_matrix[0][1] == self.faces[side.value].face_color and \
-                            self.faces[0].face_matrix[positions[index - 1][0]][positions[index - 1][1]] == self.faces[next_face.value].face_color:
-                        f2l.f2l_29(self, next_face, side)
-                    elif self.faces[side.value].face_matrix[1][2] == self.faces[side.value].face_color and \
-                            self.faces[next_face.value].face_matrix[1][0] == self.faces[next_face.value].face_color:
-                        f2l.f2l_39(self, next_face)
-                    elif self.faces[side.value].face_matrix[1][2] == self.faces[next_face.value].face_color and \
-                            self.faces[next_face.value].face_matrix[1][0] == self.faces[side.value].face_color:
-                        f2l.f2l_41(self, next_face, side)
-                elif self.faces[side.value].face_matrix[2][2] == self.faces[next_face.value].face_color and \
-                        self.faces[next_face.value].face_matrix[2][0] == down_color and \
-                        self.faces[5].face_matrix[down_corners[index][0]][down_corners[index][1]] == self.faces[side.value].face_color:
-                    if self.faces[side.value].face_matrix[0][1] == self.faces[side.value].face_color and \
-                         self.faces[0].face_matrix[positions[index - 1][0]][positions[index - 1][1]] == self.faces[next_face.value].face_color:
-                        f2l.f2l_28(self, next_face, side)
-                    elif self.faces[next_face.value].face_matrix[0][1] == self.faces[next_face.value].face_color and \
-                            self.faces[0].face_matrix[positions[index][0]][positions[index][1]] == self.faces[side.value].face_color:
-                        f2l.f2l_30(self, next_face)
-                    elif self.faces[side.value].face_matrix[1][2] == self.faces[side.value].face_color and \
-                            self.faces[next_face.value].face_matrix[1][0] == self.faces[next_face.value].face_color:
-                        f2l.f2l_40(self, next_face)
-                    elif self.faces[side.value].face_matrix[1][2] == self.faces[next_face.value].face_color and \
-                            self.faces[next_face.value].face_matrix[1][0] == self.faces[side.value].face_color:
-                        f2l.f2l_42(self, next_face, prev_face, side)
-            rotations += 1
-            for index, side in enumerate(sides):
-                next_face = sides[(index + 1) % 4]
-                prev_face = sides[index - 1]
                 if not utils.is_placed_correctly(down_corners[index][0], down_corners[index][1], self.faces[5],
                                                    self.faces[side.value], self.faces[next_face.value]):
                     self.permute_corner(next_face)
-
-            self.make_rotation(FaceDirection.UP, True)
+                    # break
 
     def solve(self):
         """

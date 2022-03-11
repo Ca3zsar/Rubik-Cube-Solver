@@ -42,6 +42,7 @@ class RubikCube:
         self.moves_number = 0
         self.last_move = None
         self.moves = []
+        self.movement_made = False
 
         if not configuration:
             self.face_length = 9
@@ -69,6 +70,7 @@ class RubikCube:
         """
         Receive a chosen face and rotate it clockwise or counterclockwise.
         """
+        self.movement_made = True
         if type(face) != FaceDirection:
             print(type(face))
         if face != self.last_move:
