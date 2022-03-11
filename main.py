@@ -10,7 +10,7 @@ import generator
 def test():
     cfop_avg = 0
     # beginner_avg = 0
-    batch = 10000
+    batch = 1000
     values = []
     over_200 = 0
     under_100 = 0
@@ -57,17 +57,18 @@ def test():
 def main():
     try:
         rubik_cube = CFOPCube([
-            Color.ORANGE, Color.WHITE, Color.BLUE, Color.WHITE, Color.WHITE, Color.WHITE, Color.RED, Color.WHITE,
+            Color.YELLOW, Color.RED, Color.WHITE, Color.RED, Color.GREEN, Color.GREEN, Color.WHITE, Color.GREEN,
             Color.WHITE,
-            Color.BLUE, Color.RED, Color.GREEN, Color.RED, Color.RED, Color.RED, Color.GREEN, Color.RED, Color.RED,
-            Color.YELLOW, Color.GREEN, Color.GREEN, Color.BLUE, Color.BLUE, Color.BLUE, Color.BLUE, Color.BLUE,
+            Color.GREEN, Color.WHITE, Color.RED, Color.WHITE, Color.WHITE, Color.ORANGE, Color.YELLOW, Color.YELLOW,
+            Color.YELLOW,
+            Color.BLUE, Color.ORANGE, Color.ORANGE, Color.BLUE, Color.ORANGE, Color.BLUE, Color.ORANGE, Color.BLUE,
             Color.BLUE,
-            Color.RED, Color.ORANGE, Color.WHITE, Color.ORANGE, Color.ORANGE, Color.ORANGE, Color.ORANGE, Color.ORANGE,
-            Color.ORANGE,
-            Color.RED, Color.BLUE, Color.WHITE, Color.GREEN, Color.GREEN, Color.GREEN, Color.GREEN, Color.GREEN,
-            Color.WHITE,
-            Color.YELLOW, Color.YELLOW, Color.YELLOW, Color.YELLOW, Color.YELLOW, Color.YELLOW, Color.ORANGE,
-            Color.YELLOW, Color.YELLOW
+            Color.GREEN, Color.YELLOW, Color.BLUE, Color.YELLOW, Color.YELLOW, Color.YELLOW, Color.ORANGE, Color.WHITE,
+            Color.RED,
+            Color.ORANGE, Color.GREEN, Color.RED, Color.RED, Color.RED, Color.BLUE, Color.GREEN, Color.WHITE,
+            Color.BLUE,
+            Color.GREEN, Color.RED, Color.YELLOW, Color.ORANGE, Color.BLUE, Color.GREEN, Color.RED, Color.ORANGE,
+            Color.WHITE
         ])
     except utils.InvalidCubeConfiguration as cube_exception:
         print(cube_exception)

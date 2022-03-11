@@ -38,6 +38,15 @@ class RubikCube:
                              (FaceDirection.RIGHT, 'L', 2, 1), (FaceDirection.FRONT, 'L', 2, 1)]
     }
 
+    move_dict = {
+        "R" : FaceDirection.RIGHT,
+        "L" : FaceDirection.LEFT,
+        "U" : FaceDirection.UP,
+        "D" : FaceDirection.DOWN,
+        "B" : FaceDirection.BACK,
+        "F" : FaceDirection.FRONT
+    }
+
     def __init__(self, configuration: list = None):
         self.moves_number = 0
         self.last_move = None
@@ -117,6 +126,26 @@ class RubikCube:
                     faces_copy[moves[i][0].value].face_matrix[j][moves[i][2]] = to_paste[j]
 
         self.faces = faces_copy[:]
+
+    def complex_rotation(self, sequence: str):
+        i = 0
+        while i < len(sequence):
+            direction = True
+            repeat = False
+            face = sequence[i]
+            if face.isalpha():
+                if i + 1 < len(sequence):
+                    if sequence[i + 1] == "'":
+                        direction = False
+                        i += 1
+                    elif sequence[i + 1] == "2":
+                        repeat = True
+                        i += 1
+            self.make_rotation(self.move_dict[face], direction)
+            if repeat:
+                self.make_rotation(self.move_dict[face], direction)
+
+            i += 1
 
     def __str__(self):
         text = ''

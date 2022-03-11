@@ -67,8 +67,8 @@ def is_right_down_cube(position_1, position_2, down_side: CubeFace, first_side: 
     """
 
     return down_side.face_matrix[position_1][position_2] == down_side.face_color and \
-           first_side.face_matrix[2][2] == first_side.face_color and \
-           second_side.face_matrix[2][0] == second_side.face_color
+        first_side.face_matrix[2][2] == first_side.face_color and \
+        second_side.face_matrix[2][0] == second_side.face_color
 
 
 def is_placed_correctly(position_1, position_2, down_side, first_side, second_side) -> bool:
@@ -82,6 +82,7 @@ def is_placed_correctly(position_1, position_2, down_side, first_side, second_si
                second_side.face_matrix[2][0]: 1}
 
     return down_necessary == current
+
 
 def is_middle_solved(faces: list[CubeFace]) -> bool:
     for face in faces:
@@ -282,7 +283,6 @@ def process_moves(moves: list):
 
 def get_solved_faces(cube):
     rotations = 0
-    faces_solved = []
     while rotations < 4:
         faces_solved = [i - 1 for i in range(1, 5) if face_solved(cube.faces[i])]
         if faces_solved:

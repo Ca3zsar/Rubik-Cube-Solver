@@ -2,61 +2,34 @@ from .elements.CubeElements import FaceDirection
 
 
 def f2l_1(cube, next_face):
-    cube.make_rotation(FaceDirection.UP, True)
-    cube.make_rotation(next_face, True)
-    cube.make_rotation(FaceDirection.UP, False)
-    cube.make_rotation(next_face, False)
+    n = next_face.name[0]
+    cube.complex_rotation(f"U{n}U'{n}'")
 
 
 def f2l_2(cube, current):
-    cube.make_rotation(FaceDirection.UP, False)
-    cube.make_rotation(current, False)
-    cube.make_rotation(FaceDirection.UP, True)
-    cube.make_rotation(current, True)
+    c = current.name[0]
+    cube.complex_rotation(f"U'{c}'U{c}")
 
 
 def f2l_3(cube, current):
-    cube.make_rotation(current, False)
-    cube.make_rotation(FaceDirection.UP, False)
-    cube.make_rotation(current, True)
+    c = current.name[0]
+    cube.complex_rotation(f"{c}'U'{c}")
 
 
 def f2l_4(cube, next_face):
-    cube.make_rotation(next_face, True)
-    cube.make_rotation(FaceDirection.UP, True)
-    cube.make_rotation(next_face, False)
+    n = next_face.name[0]
+    cube.complex_rotation(f"{n}U{n}'")
 
 
 def f2l_5(cube, next_face):
-    cube.make_rotation(FaceDirection.UP, False)
-    cube.make_rotation(next_face, True)
-    cube.make_rotation(FaceDirection.UP, True)
-    cube.make_rotation(next_face, False)
-
-    cube.make_rotation(FaceDirection.UP, True)
-    cube.make_rotation(FaceDirection.UP, True)
-
-    cube.make_rotation(next_face, True)
-    cube.make_rotation(FaceDirection.UP, False)
-    cube.make_rotation(next_face, False)
+    n = next_face.name[0]
+    cube.complex_rotation(f"U{n}U{n}'U2{n}U'{n}'")
 
 
 def f2l_6(cube, next_face, current):
-    cube.make_rotation(FaceDirection.UP, True)
-    cube.make_rotation(FaceDirection.UP, True)
-
-    for _ in range(2):
-        cube.make_rotation(next_face, False)
-        cube.make_rotation(current, True)
-        cube.make_rotation(next_face, True)
-        cube.make_rotation(current, False)
-
-    cube.make_rotation(FaceDirection.UP, True)
-    cube.make_rotation(FaceDirection.UP, True)
-
-    cube.make_rotation(next_face, True)
-    cube.make_rotation(FaceDirection.UP, True)
-    cube.make_rotation(next_face, False)
+    n = next_face.name[0]
+    c = current.name[0]
+    cube.complex_rotation(f"U2{n}'{c}{n}{c}'{n}'{c}{n}{c}'U2{n}U{n}'")
 
 
 def f2l_7(cube, next_face):
@@ -168,7 +141,7 @@ def f2l_14(cube, next_face):
     cube.make_rotation(FaceDirection.UP, True)
     cube.make_rotation(next_face, False)
 
-#???
+
 def f2l_15(cube, next_face, prev_face, back_face):
     cube.make_rotation(next_face, True)
     cube.make_rotation(back_face, True)
@@ -401,18 +374,8 @@ def f2l_33(cube, next_face):
 
 
 def f2l_34(cube, current):
-    cube.make_rotation(FaceDirection.UP, True)
-
-    cube.make_rotation(current, False)
-    cube.make_rotation(FaceDirection.UP, True)
-    cube.make_rotation(current, True)
-
-    cube.make_rotation(FaceDirection.UP, True)
-    cube.make_rotation(FaceDirection.UP, True)
-
-    cube.make_rotation(current, False)
-    cube.make_rotation(FaceDirection.UP, True)
-    cube.make_rotation(current, True)
+    c = current.name[0]
+    cube.complex_rotation(f"U{c}'U{c}U2{c}'U{c}")
 
 
 def f2l_35(cube, next_face, current):
