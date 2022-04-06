@@ -2,6 +2,7 @@ from .elements.CubeElements import FaceDirection, Color, CubeFace
 from . import utils
 import copy
 
+
 class RubikCube:
     """
     A class used to represent a cube in a simple way.
@@ -39,12 +40,12 @@ class RubikCube:
     }
 
     move_dict = {
-        "R" : FaceDirection.RIGHT,
-        "L" : FaceDirection.LEFT,
-        "U" : FaceDirection.UP,
-        "D" : FaceDirection.DOWN,
-        "B" : FaceDirection.BACK,
-        "F" : FaceDirection.FRONT
+        "R": FaceDirection.RIGHT,
+        "L": FaceDirection.LEFT,
+        "U": FaceDirection.UP,
+        "D": FaceDirection.DOWN,
+        "B": FaceDirection.BACK,
+        "F": FaceDirection.FRONT
     }
 
     def __init__(self, configuration: list = None):

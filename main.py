@@ -1,19 +1,24 @@
 import statistics
+from functools import reduce
 from time import perf_counter
-# from cubes.LayerByLayer import BeginnerCube
 from cubes.CFOP import CFOPCube
 from cubes.elements.CubeElements import Color
 from cubes import utils
 import generator
+import threading
+import matplotlib.pyplot as plt
+
+
+def start_solver(index, cube, values):
+    cube.solve()
+    cfop_moves = utils.process_moves(cube.moves)
+    values.append(len(cfop_moves))
+    print(f"{index} : {len(cfop_moves)}")
 
 
 def test():
-    cfop_avg = 0
-    # beginner_avg = 0
     batch = 1000
-    values = []
-    over_200 = 0
-    under_100 = 0
+    start = perf_counter()
 
     cubes = []
     while len(cubes) < batch:
@@ -21,37 +26,40 @@ def test():
         if cube not in cubes:
             cubes.append(cube)
 
-    for i in range(batch):
-        faces = cubes[i]
-        cfop = CFOPCube(faces)
-        # print(cfop)
-        # beginner = BeginnerCube(faces)
+    threads = [None] * batch
+    values = []
+    try:
+        for i in range(batch):
+            faces = cubes[i]
+            cfop = CFOPCube(faces)
+            start_solver(i, cfop, values)
+            # threads[i] = threading.Thread(target=start_solver, args=(i, cfop, values,))
+            # threads[i].start()
+    except:
+        print(cfop)
 
-        try:
-            cfop.solve()
-            # beginner.solve()
-        except KeyboardInterrupt:
-            print(cfop)
-            return
+    # for i in range(len(threads)):
+    #     threads[i].join()
 
-        cfop_moves = utils.process_moves(cfop.moves)
-        # beginner_moves = utils.process_moves(beginner.moves)
-        # beginner_avg += len(beginner_moves)
-        cfop_avg += len(cfop_moves)
-        values.append(len(cfop_moves))
-        if len(cfop_moves) < 100:
-            under_100 += 1
-        elif len(cfop_moves) >= 200:
-            over_200 +=1
-        print(f"{i}. CFOP : {len(cfop_moves)}")
-        # print(f"{i}. LayerByLayer : {len(beginner_moves)}")
+    intervals = {}
+    for value in values:
+        temp_value = value - value % 10
+        intervals[temp_value] = intervals.get(temp_value, 0) + 1
 
     print("AVERAGE ")
-    print(f"CFOP : {cfop_avg / batch}")
+    print(f"CFOP : {statistics.mean(values)}")
     print("MEDIAN ")
     print(statistics.median(values))
-    print(f"Over 200 : {over_200} . Under 100 : {under_100}")
-    # print(f"LayerByLayer : {beginner_avg/batch}")
+    print(
+        f"Over 170 : {reduce(lambda a, b: a + 1 if b > 170 else a, [0] + values, )} . Under 85 : {reduce(lambda a, b: a + 1 if b < 85 else a, [0] + values, )}")
+    end = perf_counter()
+    print(f"TIME : {end - start}")
+    plt.bar(list(intervals.keys()), list(intervals.values()))
+    min_value = min(intervals.keys())
+    max_value = max(intervals.keys())
+    plt.xticks(range(min_value, max_value + 10, 10))
+    plt.yticks(range(0, max(intervals.values()) + 1, 10))
+    plt.show()
 
 
 def main():

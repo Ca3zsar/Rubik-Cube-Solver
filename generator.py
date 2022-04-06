@@ -1,17 +1,32 @@
-from cubes.elements.CubeElements import FaceDirection
 from cubes.Cube import RubikCube
 import random
+
+opposites = {
+        'F': 'B',
+        'B': 'F',
+        'U': 'D',
+        'D': 'U',
+        'L': 'R',
+        'R': 'L',
+    }
 
 
 def generate():
     solved_cube = RubikCube()
 
-    moves = random.randint(35, 100)
+    moves = random.randint(20, 21)
+    last_two_moves = [None, None]
     for i in range(moves):
-        direction = random.choice(list(FaceDirection))
-        orientation = random.randint(1, 100) % 2 == 0
+        if last_two_moves[1] is not None and last_two_moves[0] == opposites[last_two_moves[1]]:
+            face_direction = random.choice(list(set(solved_cube.move_dict.keys()) - set(last_two_moves)))
+        else:
+            face_direction = random.choice(list(solved_cube.move_dict.keys() - {last_two_moves[1]}))
 
-        solved_cube.make_rotation(direction, orientation)
+        last_two_moves[0] = last_two_moves[1]
+        last_two_moves[1] = face_direction
+        direction = "'" if random.randint(0, 1) == 0 else ""
+        repeat = '2' if random.randint(0, 1) == 0 and not direction else ''
+        solved_cube.complex_rotation(f"{face_direction}{direction}{repeat}")
 
     faces = []
     for face in solved_cube.faces:

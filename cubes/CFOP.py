@@ -1,6 +1,6 @@
 from .elements.CubeElements import FaceDirection
 from .Cube import RubikCube
-from . import utils
+from . import utils, oll
 from . import f2l
 
 
@@ -60,7 +60,6 @@ class CFOPCube(RubikCube):
 
         while color_number < 4:
             i = 1
-            # In while e problema la diff ( caz back cu left)
             while i < 5:
                 if self.faces[0].face_matrix[positions[i - 1][0]][positions[i - 1][1]] == down_color:
                     diff = colors.index(self.faces[i].face_color) - colors.index(self.faces[i].face_matrix[0][1])
@@ -94,15 +93,15 @@ class CFOPCube(RubikCube):
                         self.make_rotation(face_to_check, True)
                     else:
                         other_color = self.faces[face_to_check.value].face_matrix[1][2]
-                        diff = colors.index(self.faces[face_to_check.value].face_color) - colors.index(other_color)
-                        direction = diff > 0
-                        for _ in range(abs(diff)):
-                            self.make_rotation(FaceDirection.DOWN, direction)
-
-                        self.make_rotation(face_to_check, True)
-
-                        for _ in range(abs(diff)):
-                            self.make_rotation(FaceDirection.DOWN, not direction)
+                        opposite_face = sides[(index - 2)]
+                        if other_color == self.faces[opposite_face.value].face_color:
+                            self.make_rotation(FaceDirection.DOWN, True)
+                            self.make_rotation(face_to_check, True)
+                            self.make_rotation(FaceDirection.DOWN, False)
+                        else:
+                            self.complex_rotation("D2")
+                            self.make_rotation(face_to_check, True)
+                            self.complex_rotation("D2")
 
                 if self.faces[face.value].face_matrix[1][2] == down_color:
                     face_to_check = sides[(index + 1) % 4]
@@ -157,8 +156,17 @@ class CFOPCube(RubikCube):
                             next_face.face_color:
                         self.make_rotation(face, False)
                         self.make_rotation(next_face.face_direction, False)
+                    elif self.faces[FaceDirection.DOWN.value].face_matrix[down_pos[index][0]][down_pos[index][1]] == \
+                            self.faces[face.value].face_color:
+                        self.make_rotation(face, False)
+                        self.make_rotation(FaceDirection.DOWN, True)
+                        self.make_rotation(next_face.face_direction, False)
+                        self.make_rotation(FaceDirection.DOWN, False)
                     else:
-                        self.make_rotation(face, True)
+                        self.make_rotation(face, False)
+                        self.make_rotation(FaceDirection.DOWN, False)
+                        self.make_rotation(next_face.face_direction, False)
+                        self.make_rotation(FaceDirection.DOWN, True)
 
             color_number = 0
             for index, position in enumerate(down_pos):
@@ -194,110 +202,152 @@ class CFOPCube(RubikCube):
 
         while not utils.is_cross_formed(self.faces[0]):
             if utils.is_horizontal_line(self.faces[0]):
-                self.form_final_cross(1)
-            elif utils.is_vertical_line(self.faces[0]):
-                self.make_rotation(FaceDirection.UP, True)
-            elif moves := utils.wanted_corner(self.faces[0]):
-                self.make_rotation(moves[0], True)
-                self.make_rotation(FaceDirection.UP, True)
-                self.make_rotation(moves[1], True)
-                self.make_rotation(FaceDirection.UP, False)
-                self.make_rotation(moves[1], False)
-                self.make_rotation(moves[0], False)
-                # self.form_final_cross(2)
-            elif rotations := utils.any_corner(self.faces[0]):
-                for _ in range(rotations):
-                    self.make_rotation(FaceDirection.UP, True)
-            else:
-                self.form_final_cross(2)
-
-        rotations = 0
-        while not utils.face_solved(self.faces[0]) and rotations < 3:
-            # OLL Cases
-            facets = [self.faces[0].face_matrix[0][0], self.faces[0].face_matrix[0][2],
-                      self.faces[0].face_matrix[2][0], self.faces[0].face_matrix[2][2]]
-
-            if not (number := facets.count(up_color)):
-                side_facets = [self.faces[1].face_matrix[0][0], self.faces[1].face_matrix[0][2],
-                               self.faces[3].face_matrix[0][0], self.faces[3].face_matrix[0][2]]
-
-                appearances = side_facets.count(up_color)
-                if appearances == 4:
-                    self.complex_rotation("RUR'URU'R'URU2R'")
-                    return
+                if oll.oll_13(self.faces[2], self.faces[3], self.faces[4], self.faces[0], up_color):
+                    self.complex_rotation("FURU'R2F'RURU'R'")
+                elif oll.oll_14(self.faces[2], self.faces[1], self.faces[4], self.faces[0], up_color):
+                    self.complex_rotation("R'FRUR'F'RFU'F'")
+                elif oll.oll_39(self.faces[2], self.faces[3], self.faces[4], self.faces[0], up_color):
+                    self.complex_rotation("LF'L'U'LUFU'L'")
+                elif oll.oll_40(self.faces[2], self.faces[1], self.faces[4], self.faces[0], up_color):
+                    self.complex_rotation("R'FRUR'U'F'UR")
+                elif oll.oll_34(self.faces[2], self.faces[1], self.faces[3], self.faces[4], self.faces[0], up_color):
+                    self.complex_rotation("RUR2U'R'FRURU'F'")
+                elif self.faces[4].face_matrix[0][2] == up_color and self.faces[1].face_matrix[0][0] == up_color and \
+                        self.faces[3].face_matrix[0][0] == up_color and self.faces[3].face_matrix[0][2] == up_color:
+                    self.complex_rotation("FURU'R'URU'R'F'")
+                elif oll.oll_55(self.faces[2], self.faces[4], up_color):
+                    self.complex_rotation("R'FRURU'R2F'R2U'R'URUR'")
+                elif oll.oll_45(self.faces[2], self.faces[1], self.faces[4], self.faces[0], up_color):
+                    self.complex_rotation("FRUR'U'F'")
+                elif oll.oll_33(self.faces[2], self.faces[4], self.faces[0], up_color):
+                    self.complex_rotation("RUR'U'R'FRF'")
+                elif oll.oll_56(self.faces[2], self.faces[1], self.faces[3], self.faces[4], up_color):
+                    self.complex_rotation("LFL'URU'R'URU'R'LF'L'")
                 else:
-                    # R U2 R2 U' R2 U' R2 U2 R
-                    if appearances == 0:
-                        self.complex_rotation("U2")
+                    self.form_final_cross(1)
+            elif utils.is_vertical_line(self.faces[0]):
+                if oll.oll_46(self.faces[1], self.faces[3], self.faces[0], up_color):
+                    self.complex_rotation("R'U'R'FRF'UR")
+                elif oll.oll_52(self.faces[2], self.faces[1], self.faces[3], self.faces[4], up_color):
+                    self.complex_rotation("RUR'URU'BU'B'R'")
+                else:
+                    self.make_rotation(FaceDirection.UP, True)
+            elif moves := utils.wanted_corner(self.faces[0]):
+                cond = False
+                # 9 o'clock
+                if moves[0] == FaceDirection.FRONT:
+                    if oll.oll_29(self.faces[2], self.faces[3], self.faces[4], self.faces[0], up_color):
+                        self.complex_rotation("RUR'U'RU'R'F'U'FRUR'")
+                        cond = True
+                    elif oll.oll_9(self.faces[2], self.faces[1], self.faces[3], self.faces[4], self.faces[0], up_color):
+                        self.complex_rotation("RUR'U'R'FR2UR'U'F'")
+                        cond = True
+                    elif oll.oll_28(self.faces[2], self.faces[3], self.faces[0], up_color):
+                        self.complex_rotation("FRUR'U'F'U2FRUR'U'F'")
+                        cond = True
+                    elif oll.oll_30(self.faces[2], self.faces[1], self.faces[3], self.faces[0], up_color):
+                        self.complex_rotation("FR'FR2U'R'U'RUR'F2")
+                        cond = True
+                    elif oll.oll_32(self.faces[2], self.faces[3], self.faces[4], self.faces[0], up_color):
+                        self.complex_rotation("LUF'U'L'ULFL'")
+                        cond = True
+                    elif oll.oll_37(self.faces[2], self.faces[3], self.faces[0], up_color):
+                        self.complex_rotation("FR'F'RURU'R'")
+                        cond = True
+                    elif oll.oll_38(self.faces[2], self.faces[3], self.faces[4], self.faces[0], up_color):
+                        self.complex_rotation("RUR'URU'R'U'R'FRF'")
+                        cond = True
+                    elif oll.oll_41(self.faces[2], self.faces[3], self.faces[4], self.faces[0], up_color):
+                        self.complex_rotation("RUR'URU2R'FRUR'U'F'")
+                        cond = True
+                    elif oll.oll_44(self.faces[2], self.faces[3], self.faces[0], up_color):
+                        self.complex_rotation("FURU'R'F'")
+                        cond = True
+                    elif oll.oll_48(self.faces[2], self.faces[1], self.faces[3], self.faces[4], up_color):
+                        self.complex_rotation("FRUR'U'RUR'U'F'")
+                        cond = True
 
-                    if appearances == 2:
-                        self.complex_rotation("RU2R2U'R2U'R2U2R")
+                # 3 o'clock
+                if moves[0] == FaceDirection.LEFT:
+                    if oll.oll_31(self.faces[2], self.faces[3], self.faces[4], self.faces[0], up_color):
+                        self.complex_rotation("R'U'FURU'R'F'R")
+                        cond = True
+                    if oll.oll_36(self.faces[2], self.faces[1], self.faces[4], self.faces[0], up_color):
+                        self.complex_rotation("L'U'LU'L'ULULF'L'F")
+                        cond = True
+                    elif oll.oll_43(self.faces[2], self.faces[1], self.faces[0], up_color):
+                        self.complex_rotation("F'U'L'ULF")
+                        cond = True
+                    elif oll.oll_47(self.faces[2], self.faces[1], self.faces[3], self.faces[4], up_color):
+                        self.complex_rotation("R'U'R'FRF'R'FRF'UR")
+                        cond = True
+
+                if moves[0] == FaceDirection.RIGHT:
+                    if oll.oll_10(self.faces[2], self.faces[1], self.faces[3], self.faces[4], self.faces[0], up_color):
+                        self.complex_rotation("RUR'UR'FRF'RU2R'")
+                        cond = True
+                    elif oll.oll_42(self.faces[2], self.faces[3], self.faces[4], self.faces[0], up_color):
+                        self.complex_rotation("R'U'RU'R'U2RFRUR'U'F'")
+                        cond = True
+                    elif oll.oll_49(self.faces[2], self.faces[3], self.faces[4], up_color):
+                        self.complex_rotation("RB'R2FR2BR2F'R")
+                        cond = True
+
+                if moves[0] == FaceDirection.BACK:
+                    if oll.oll_35(self.faces[2], self.faces[1], self.faces[3], self.faces[4], self.faces[0], up_color):
+                        self.complex_rotation("RUR'UR'FRF'RU2R'")
+                        cond = True
+                    elif oll.oll_50(self.faces[2], self.faces[1], self.faces[4], up_color):
+                        self.complex_rotation("RB'RBR2U2FR'F'R")
+                        cond = True
+
+                if not cond:
+                    print("AICI")
+                    self.make_rotation(moves[0], True)
+                    self.make_rotation(FaceDirection.UP, True)
+                    self.make_rotation(moves[1], True)
+                    self.make_rotation(FaceDirection.UP, False)
+                    self.make_rotation(moves[1], False)
+                    self.make_rotation(moves[0], False)
             else:
-                if number == 1:
-                    if self.faces[0].face_matrix[0][2] == up_color:
-                        condition = all([self.faces[1].face_matrix[0][0] == up_color,
-                                         self.faces[2].face_matrix[0][0] == up_color,
-                                         self.faces[3].face_matrix[0][0] == up_color])
-                        if condition:
-                            self.complex_rotation("RU2R'U'RU'R'")
-                        else:
-                            # Can't really prove this at the moment
-                            self.complex_rotation("U2RUR'URU2R'")
-                elif number == 2:
-                    if self.faces[0].face_matrix[0][0] == up_color and self.faces[0].face_matrix[2][2] == up_color:
-                        if self.faces[3].face_matrix[0][2] == up_color and self.faces[2].face_matrix[0][0] == up_color:
-                            self.complex_rotation("FR'F'LFRF'L'")
-                    elif self.faces[0].face_matrix[0][0] == up_color and self.faces[0].face_matrix[0][2] == up_color:
-                        if self.faces[2].face_matrix[0][0] == up_color and self.faces[2].face_matrix[0][2] == up_color:
-                            self.complex_rotation("R2DR'U2RD'R'U2R'")
-                    elif self.faces[0].face_matrix[0][2] == up_color and self.faces[0].face_matrix[2][2] == up_color:
-                        if self.faces[4].face_matrix[0][2] == up_color and self.faces[2].face_matrix[0][0] == up_color:
-                            # r U R' U' r' F R F'
-                            self.complex_rotation("LFR'F'L'FRF'")
-
-            rotations += 1
-            self.make_rotation(FaceDirection.UP, True)
-
-        if utils.face_solved(self.faces[0]):
-            return
-
-        # Not OLL Cases yet
-        faces_moves = [FaceDirection.FRONT, FaceDirection.RIGHT, FaceDirection.BACK, FaceDirection.LEFT]
-        outcomes = [{0, 3}, {0, 1}, {1, 2}, {2, 3}]
-
-        diagonal_moves = [(FaceDirection.RIGHT, FaceDirection.FRONT), (FaceDirection.BACK, FaceDirection.RIGHT)]
-        diagonal_outcomes = [{0, 2}, {1, 3}]
-
-        while len(matches := utils.match_corners(self.faces)) != 4:
-            if len(matches) != 2:
-                self.make_rotation(FaceDirection.UP, True)
-                continue
-
-            difference = abs(matches[0] - matches[1])
-            if difference % 2 == 1:
-                move = [i for i in range(4) if outcomes[i] == set(matches)][0]
-                for _ in range(3):
-                    self.permute_corner(faces_moves[(move + 1) % 4])
-                for _ in range(3):
-                    self.counter_permute_corner(faces_moves[move])
-            else:
-                move = 0 if diagonal_outcomes[0] == set(matches) else 1
-                for _ in range(3):
-                    self.permute_corner(diagonal_moves[move][0])
-                for _ in range(3):
-                    self.counter_permute_corner(diagonal_moves[move][1])
+                cond = False
+                if self.faces[4].face_matrix[0][1] == up_color and self.faces[2].face_matrix[0][1] == up_color:
+                    if utils.line_in_single_color(self.faces[1], 0, up_color) and utils.line_in_single_color(self.faces[3], 0, up_color):
+                        self.complex_rotation("RU2R2FRF'U2R'FRF'")
+                        cond = True
+                    elif utils.line_in_single_color(self.faces[1], 0, up_color) and self.faces[4].face_matrix[0][0] == up_color and \
+                            self.faces[2].face_matrix[0][2] == up_color:
+                        self.complex_rotation("BL'B'LUL2F'L'FU'L'")
+                        cond = True
+                    elif oll.oll_20(self.faces[2], self.faces[1], self.faces[3], self.faces[4], self.faces[0], up_color):
+                        self.complex_rotation("RBUB'R'F2BD'L'DB'F2")
+                        cond = True
+                    elif oll.oll_17(self.faces[2], self.faces[1],self.faces[3],self.faces[4], self.faces[0], up_color):
+                        self.complex_rotation("RUR'UR'FRF'U2R'FRF'")
+                        cond = True
+                if not cond:
+                    self.form_final_cross(2)
 
         while not utils.face_solved(self.faces[0]):
-            if self.faces[2].face_matrix[0][0] != up_color and self.faces[1].face_matrix[0][2] != up_color:
+            # OLL Cases
+            if oll.oll_21(self.faces[2], self.faces[4], up_color):
+                self.complex_rotation("RU2R'U'RUR'U'RU'R'")
+            elif oll.oll_22(self.faces[2], self.faces[1], self.faces[4], up_color):
+                self.complex_rotation("RU2R2U'R2U'R2U2R")
+            elif oll.oll_23(self.faces[4], self.faces[0], up_color):
+                self.complex_rotation("R2D'RU2R'DRU2R")
+            elif oll.oll_22(self.faces[2], self.faces[4], self.faces[0], up_color):
+                self.complex_rotation("LFR'F'L'FRF'")
+            elif oll.oll_24(self.faces[2], self.faces[4], self.faces[0], up_color):
+                self.complex_rotation("LFR'F'L'FRF'")
+            elif oll.oll_25(self.faces[2], self.faces[1], self.faces[0], up_color):
+                self.complex_rotation("F'LFR'F'L'FR")
+            elif oll.oll_26(self.faces[2], self.faces[1], self.faces[3], self.faces[0], up_color):
+                self.complex_rotation("RU2R'U'RU'R'")
+            elif oll.oll_27(self.faces[2], self.faces[3], self.faces[4], self.faces[0], up_color):
+                self.complex_rotation("RUR'URU2R'")
+            if not utils.face_solved(self.faces[0]):
                 self.make_rotation(FaceDirection.UP, True)
-                continue
-
-            if self.faces[2].face_matrix[0][0] == up_color:
-                rotations = 4
-            else:
-                rotations = 2
-            for _ in range(rotations):
-                self.complex_rotation("LDL'D'")
 
     def PLL_one_completed(self, faces_solved):
         moves = [FaceDirection.FRONT, FaceDirection.RIGHT, FaceDirection.BACK, FaceDirection.LEFT]
@@ -427,24 +477,7 @@ class CFOPCube(RubikCube):
                     elif self.faces[1].face_matrix[0][1] == self.faces[2].face_color and \
                             self.faces[2].face_matrix[0][1] == self.faces[1].face_color and \
                             self.faces[3].face_matrix[0][1] == self.faces[4].face_color:
-                        self.make_rotation(FaceDirection.UP, True)
-
-                        self.make_rotation(FaceDirection.BACK, False)
-                        self.make_rotation(FaceDirection.UP, False)
-                        self.make_rotation(FaceDirection.BACK, True)
-                        self.make_rotation(FaceDirection.BACK, True)
-                        self.make_rotation(FaceDirection.UP, True)
-                        self.make_rotation(FaceDirection.BACK, True)
-                        self.make_rotation(FaceDirection.UP, True)
-                        self.make_rotation(FaceDirection.BACK, False)
-                        self.make_rotation(FaceDirection.UP, False)
-                        self.make_rotation(FaceDirection.BACK, True)
-                        self.make_rotation(FaceDirection.UP, True)
-                        self.make_rotation(FaceDirection.BACK, True)
-                        self.make_rotation(FaceDirection.UP, False)
-                        self.make_rotation(FaceDirection.BACK, True)
-                        self.make_rotation(FaceDirection.UP, False)
-                        self.make_rotation(FaceDirection.BACK, False)
+                        self.complex_rotation("UB'U'B2UBUB'U'BUBU'BU'B'")
 
                 for _ in range(3):
                     if utils.is_cube_solved(self.faces):
@@ -475,13 +508,11 @@ class CFOPCube(RubikCube):
                     prev_face = sides[index - 1]
 
                     if self.faces[side.value].face_matrix[0][2] == down_color and \
-                            self.faces[0].face_matrix[corners[index][0]][corners[index][1]] == self.faces[
-                        side.value].face_color and \
+                            self.faces[0].face_matrix[corners[index][0]][corners[index][1]] == self.faces[side.value].face_color and \
                             self.faces[next_face.value].face_matrix[0][0] == self.faces[next_face.value].face_color:
 
                         if self.faces[next_face.value].face_matrix[0][1] == self.faces[next_face.value].face_color and \
-                                self.faces[0].face_matrix[positions[index][0]][positions[index][1]] == self.faces[
-                            side.value].face_color:
+                                self.faces[0].face_matrix[positions[index][0]][positions[index][1]] == self.faces[side.value].face_color:
                             f2l.f2l_1(self, next_face)
 
                         elif self.faces[prev_face.value].face_matrix[0][1] == self.faces[side.value].face_color and \
@@ -527,23 +558,20 @@ class CFOPCube(RubikCube):
                             f2l.f2l_35(self, next_face, side)
 
                     elif self.faces[side.value].face_matrix[0][2] == self.faces[side.value].face_color and \
-                            self.faces[0].face_matrix[corners[index][0]][corners[index][1]] == self.faces[
-                        next_face.value].face_color and \
+                            self.faces[0].face_matrix[corners[index][0]][corners[index][1]] == self.faces[next_face.value].face_color and \
                             self.faces[next_face.value].face_matrix[0][0] == down_color:
                         if self.faces[side.value].face_matrix[0][1] == self.faces[side.value].face_color and \
                                 self.faces[0].face_matrix[positions[index - 1][0]][positions[index - 1][1]] == \
                                 self.faces[next_face.value].face_color:
                             f2l.f2l_2(self, side)
 
-                        elif self.faces[sides[index - 2].value].face_matrix[0][1] == self.faces[
-                            next_face.value].face_color and \
+                        elif self.faces[sides[index - 2].value].face_matrix[0][1] == self.faces[next_face.value].face_color and \
                                 self.faces[0].face_matrix[case_3_pos[index - 1][0]][case_3_pos[index - 1][1]] == \
                                 self.faces[side.value].face_color:
                             f2l.f2l_4(self, next_face)
 
                         elif self.faces[prev_face.value].face_matrix[0][1] == self.faces[side.value].face_color and \
-                                self.faces[0].face_matrix[case_3_pos[index][0]][case_3_pos[index][1]] == self.faces[
-                            next_face.value].face_color:
+                                self.faces[0].face_matrix[case_3_pos[index][0]][case_3_pos[index][1]] == self.faces[next_face.value].face_color:
                             f2l.f2l_6(self, next_face, side)
 
                         elif self.faces[sides[index - 2].value].face_matrix[0][1] == self.faces[
@@ -553,8 +581,7 @@ class CFOPCube(RubikCube):
                             f2l.f2l_8(self, side)
 
                         elif self.faces[prev_face.value].face_matrix[0][1] == self.faces[next_face.value].face_color and \
-                                self.faces[0].face_matrix[case_3_pos[index][0]][case_3_pos[index][1]] == self.faces[
-                            side.value].face_color:
+                                self.faces[0].face_matrix[case_3_pos[index][0]][case_3_pos[index][1]] == self.faces[side.value].face_color:
                             f2l.f2l_10(self, next_face)
 
                         elif self.faces[side.value].face_matrix[0][1] == self.faces[next_face.value].face_color and \
@@ -563,13 +590,11 @@ class CFOPCube(RubikCube):
                             f2l.f2l_12(self, next_face)
 
                         elif self.faces[next_face.value].face_matrix[0][1] == self.faces[next_face.value].face_color and \
-                                self.faces[0].face_matrix[positions[index][0]][positions[index][1]] == self.faces[
-                            side.value].face_color:
+                                self.faces[0].face_matrix[positions[index][0]][positions[index][1]] == self.faces[side.value].face_color:
                             f2l.f2l_14(self, next_face)
 
                         elif self.faces[next_face.value].face_matrix[0][1] == self.faces[side.value].face_color and \
-                                self.faces[0].face_matrix[positions[index][0]][positions[index][1]] == self.faces[
-                            next_face.value].face_color:
+                                self.faces[0].face_matrix[positions[index][0]][positions[index][1]] == self.faces[next_face.value].face_color:
                             f2l.f2l_16(self, next_face, side)
 
                         elif self.faces[side.value].face_matrix[1][2] == self.faces[side.value].face_color and \
@@ -585,8 +610,7 @@ class CFOPCube(RubikCube):
                             self.faces[next_face.value].face_matrix[0][0] == self.faces[side.value].face_color:
 
                         if self.faces[next_face.value].face_matrix[0][1] == self.faces[next_face.value].face_color and \
-                                self.faces[0].face_matrix[positions[index][0]][positions[index][1]] == self.faces[
-                            side.value].face_color:
+                                self.faces[0].face_matrix[positions[index][0]][positions[index][1]] == self.faces[side.value].face_color:
                             f2l.f2l_17(self, next_face)
                         elif self.faces[side.value].face_matrix[0][1] == self.faces[side.value].face_color and \
                                 self.faces[0].face_matrix[positions[index - 1][0]][positions[index - 1][1]] == \
@@ -598,12 +622,10 @@ class CFOPCube(RubikCube):
                                 self.faces[side.value].face_color:
                             f2l.f2l_19(self, next_face, side)
                         elif self.faces[prev_face.value].face_matrix[0][1] == self.faces[side.value].face_color and \
-                                self.faces[0].face_matrix[case_3_pos[index][0]][case_3_pos[index][1]] == self.faces[
-                            next_face.value].face_color:
+                                self.faces[0].face_matrix[case_3_pos[index][0]][case_3_pos[index][1]] == self.faces[next_face.value].face_color:
                             f2l.f2l_20(self, next_face, side)
                         elif self.faces[prev_face.value].face_matrix[0][1] == self.faces[next_face.value].face_color and \
-                                self.faces[0].face_matrix[case_3_pos[index][0]][case_3_pos[index][1]] == self.faces[
-                            side.value].face_color:
+                                self.faces[0].face_matrix[case_3_pos[index][0]][case_3_pos[index][1]] == self.faces[side.value].face_color:
                             f2l.f2l_21(self, next_face)
 
                         elif self.faces[sides[index - 2].value].face_matrix[0][1] == self.faces[
@@ -616,8 +638,7 @@ class CFOPCube(RubikCube):
                                 self.faces[side.value].face_color:
                             f2l.f2l_23(self, next_face)
                         elif self.faces[next_face.value].face_matrix[0][1] == self.faces[side.value].face_color and \
-                                self.faces[0].face_matrix[positions[index][0]][positions[index][1]] == self.faces[
-                            next_face.value].face_color:
+                                self.faces[0].face_matrix[positions[index][0]][positions[index][1]] == self.faces[next_face.value].face_color:
                             f2l.f2l_24(self, next_face, side, prev_face)
                         elif self.faces[side.value].face_matrix[1][2] == self.faces[next_face.value].face_color and \
                                 self.faces[next_face.value].face_matrix[1][0] == self.faces[side.value].face_color:
@@ -660,7 +681,8 @@ class CFOPCube(RubikCube):
                             f2l.f2l_41(self, next_face, side)
                     elif self.faces[side.value].face_matrix[2][2] == self.faces[next_face.value].face_color and \
                             self.faces[next_face.value].face_matrix[2][0] == down_color and \
-                            self.faces[5].face_matrix[down_corners[index][0]][down_corners[index][1]] == self.faces[side.value].face_color:
+                            self.faces[5].face_matrix[down_corners[index][0]][down_corners[index][1]] == self.faces[
+                        side.value].face_color:
                         if self.faces[side.value].face_matrix[0][1] == self.faces[side.value].face_color and \
                                 self.faces[0].face_matrix[positions[index - 1][0]][positions[index - 1][1]] == \
                                 self.faces[next_face.value].face_color:

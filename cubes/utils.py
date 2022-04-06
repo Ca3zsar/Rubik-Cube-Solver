@@ -67,8 +67,8 @@ def is_right_down_cube(position_1, position_2, down_side: CubeFace, first_side: 
     """
 
     return down_side.face_matrix[position_1][position_2] == down_side.face_color and \
-        first_side.face_matrix[2][2] == first_side.face_color and \
-        second_side.face_matrix[2][0] == second_side.face_color
+           first_side.face_matrix[2][2] == first_side.face_color and \
+           second_side.face_matrix[2][0] == second_side.face_color
 
 
 def is_placed_correctly(position_1, position_2, down_side, first_side, second_side) -> bool:
@@ -237,6 +237,20 @@ def face_solved(face: CubeFace) -> bool:
         for j in range(3):
             if face.face_matrix[i][j] != face.face_color:
                 return False
+    return True
+
+
+def line_in_single_color(face: CubeFace, line: int, color) -> bool:
+    """
+    Check if a line is entirely solved
+    :param face: the face to check
+    :param line: the line to check
+    :param color: the color to check
+    :return bool: if the line is solved
+    """
+    for i in range(3):
+        if face.face_matrix[line][i] != color:
+            return False
     return True
 
 
