@@ -2,14 +2,7 @@ from .elements.CubeElements import FaceDirection, Color, CubeFace
 from . import utils
 import copy
 
-
-class RubikCube:
-    """
-    A class used to represent a cube in a simple way.
-    It has a list of 6 CubeFace objects, each representing a face of the cube.
-    """
-
-    movements = {
+movements = {
         FaceDirection.UP: [(FaceDirection.LEFT, 'L', 0, 1), (FaceDirection.BACK, 'L', 0, 1),
                            (FaceDirection.RIGHT, 'L', 0, 1), (FaceDirection.FRONT, 'L', 0, 1)],
         FaceDirection.LEFT: [(FaceDirection.DOWN, 'C', 0, -1), (FaceDirection.BACK, 'C', 2, -1),
@@ -24,7 +17,7 @@ class RubikCube:
                              (FaceDirection.BACK, 'L', 2, 1), (FaceDirection.LEFT, 'L', 2, 1)]
     }
 
-    revert_movements = {
+revert_movements = {
         FaceDirection.UP: [(FaceDirection.FRONT, 'L', 0, 1), (FaceDirection.RIGHT, 'L', 0, 1),
                            (FaceDirection.BACK, 'L', 0, 1), (FaceDirection.LEFT, 'L', 0, 1)],
         FaceDirection.LEFT: [(FaceDirection.FRONT, 'C', 0, 1), (FaceDirection.UP, 'C', 0, -1),
@@ -37,7 +30,14 @@ class RubikCube:
                              (FaceDirection.DOWN, 'L', 2, 1), (FaceDirection.LEFT, 'C', 0, -1)],
         FaceDirection.DOWN: [(FaceDirection.LEFT, 'L', 2, 1), (FaceDirection.BACK, 'L', 2, 1),
                              (FaceDirection.RIGHT, 'L', 2, 1), (FaceDirection.FRONT, 'L', 2, 1)]
-    }
+}
+
+
+class RubikCube:
+    """
+    A class used to represent a cube in a simple way.
+    It has a list of 6 CubeFace objects, each representing a face of the cube.
+    """
 
     move_dict = {
         "R": FaceDirection.RIGHT,
@@ -102,9 +102,9 @@ class RubikCube:
             faces_copy[face.value].rotate_counter()
 
         if clockwise:
-            moves = RubikCube.movements[face]
+            moves = movements[face]
         else:
-            moves = RubikCube.revert_movements[face]
+            moves = revert_movements[face]
 
         # Apply the change to the other faces
         for i in range(len(moves)):

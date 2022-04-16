@@ -302,7 +302,6 @@ class CFOPCube(RubikCube):
                         cond = True
 
                 if not cond:
-                    print("AICI")
                     self.make_rotation(moves[0], True)
                     self.make_rotation(FaceDirection.UP, True)
                     self.make_rotation(moves[1], True)
