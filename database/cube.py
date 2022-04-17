@@ -176,6 +176,31 @@ class CubeCompact:
         self.faces[1] = (rotated << 32) | right_half
         self.faces[2] = (self.faces[2] & 0x7FFFFFFF00000000) | down_half
 
+    def back_rotate(self):
+        back_half = np.int32(self.faces[2] >> 32)
+        rotated = ror(back_half, 8, 32)
+
+        up_half = self.faces[0] >> 32
+        up_first_row = up_half & 0xFFF00000
+
+        right_half = self.faces[1] & 0xFFFFFFFF
+        right_third_column = right_half & 0x00FFF000
+        up_half = (up_half & 0x000FFFFF) | rol(right_third_column, 8, 32)
+
+        down_half = self.faces[2] & 0xFFFFFFFF
+        down_last_row = down_half & 0x0000FFF0
+        right_half = (right_half & 0xFF000FFF) | rol(down_last_row, 8, 32)
+
+        left_half = self.faces[0] & 0xFFFFFFFF
+        left_first_column = left_half & 0xF00000FF
+        down_half = (down_half & 0xFFFF000F) | rol(left_first_column, 8, 32)
+
+        left_half = (left_half & 0x0FFFFF00) | rol(up_first_row, 8, 32)
+
+        self.faces[0] = (up_half << 32) | left_half
+        self.faces[1] = (self.faces[1] & 0x7FFFFFFF00000000) | right_half
+        self.faces[2] = (rotated << 32) | down_half
+
     def up_rotate_counter(self):
         # Rotate the up face
         first_half = np.int32(self.faces[0] >> 32)
@@ -305,3 +330,28 @@ class CubeCompact:
         self.faces[0] = (up_half << 32) | left_half
         self.faces[1] = (rotated << 32) | right_half
         self.faces[2] = (self.faces[2] & 0x7FFFFFFF00000000) | down_half
+
+    def back_rotate_counter(self):
+        back_half = np.int32(self.faces[2] >> 32)
+        rotated = rol(back_half, 8, 32)
+
+        up_half = self.faces[0] >> 32
+        up_first_row = up_half & 0xFFF00000
+
+        left_half = self.faces[0] & 0xFFFFFFFF
+        left_first_column = left_half & 0xF00000FF
+        up_half = (up_half & 0x000FFFFF) | ror(left_first_column, 8, 32)
+
+        down_half = self.faces[2] & 0xFFFFFFFF
+        down_last_row = down_half & 0x0000FFF0
+        left_half = (left_half & 0x0FFFFF00) | ror(down_last_row, 8, 32)
+
+        right_half = self.faces[1] & 0xFFFFFFFF
+        right_third_column = right_half & 0x00FFF000
+        down_half = (down_half & 0xFFFF000F) | ror(right_third_column, 8, 32)
+
+        right_half = (right_half & 0xFF000FFF) | ror(up_first_row, 8, 32)
+
+        self.faces[0] = (up_half << 32) | left_half
+        self.faces[1] = (self.faces[1] & 0x7FFFFFFF00000000) | right_half
+        self.faces[2] = (rotated << 32) | down_half
