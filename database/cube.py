@@ -12,7 +12,7 @@ class Color(Enum):
 
 
 order = [0, 1, 2, 5, 8, 7, 6, 3]
-
+unfold_order = [0, 1, 2, 7, 3, 6, 5, 4]
 
 def ror(n, rotations, width):
     """
@@ -34,6 +34,7 @@ class CubeCompact:
     The colors are : RED, BLUE, WHITE, GREEN, YELLOW, ORANGE
     The face order is : UP, LEFT, FRONT, RIGHT, BACK, DOWN
     '''
+    __slots__ = ['faces']
 
     def __init__(self, faces: list[list[Color]]):
         self.faces = np.zeros(3, dtype=np.int64)
@@ -293,7 +294,7 @@ class CubeCompact:
 
         down_half = self.faces[2] & 0xFFFFFFFF
         down_third_column = down_half & 0x00FFF000
-        back_half = (back_half & 0x0FFFFF00) | ror(down_third_column, 16, 32)
+        back_half = (back_half & 0x0FFFFF00) | rol(down_third_column, 16, 32)
 
         front_half = self.faces[1] >> 32
         front_third_column = front_half & 0x00FFF000
@@ -325,7 +326,7 @@ class CubeCompact:
         left_third_column = left_half & 0x00FFF000
         down_half = (down_half & 0x000FFFFF) | rol(left_third_column, 8, 32)
 
-        left_half = (left_half & 0xFF000FFF) | ror(up_last_row, 8, 32)
+        left_half = (left_half & 0xFF000FFF) | rol(up_last_row, 8, 32)
 
         self.faces[0] = (up_half << 32) | left_half
         self.faces[1] = (rotated << 32) | right_half
@@ -507,3 +508,28 @@ class CubeCompact:
         self.faces[0] = (up_half << 32) | (self.faces[0] & 0xFFFFFFFF)
         self.faces[1] = rotated | (front_half << 32)
         self.faces[2] = (back_half << 32) | (down_half & 0xFFFFFFFF)
+
+    def __repr__(self):
+        current_color = 0
+        colors = list(Color)
+        string: str = ""
+        for face in self.faces:
+            string += "["
+            first_half = face >> 32
+
+            for index, i in enumerate(unfold_order):
+                if index == 4:
+                    string += f"{colors[current_color]}, "
+                    current_color += 1
+                color = first_half >> (28 - i * 4) & 0xF
+                string += f"{colors[color]}, "
+            string += "],\n["
+            second_half = face & 0xFFFFFFFF
+            for index, i in enumerate(unfold_order):
+                if index == 4:
+                    string += f"{colors[current_color]}, "
+                    current_color += 1
+                color = second_half >> (28 - i * 4) & 0xF
+                string += f"{colors[color]}, "
+            string += "],\n"
+        return string

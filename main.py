@@ -62,7 +62,6 @@ def test():
 
 
 def main():
-    # tra.a.facy:
     rubik_cube = CFOPCube([
         [Color.BLUE, Color.WHITE, Color.WHITE, Color.BLUE, Color.WHITE, Color.WHITE, Color.BLUE, Color.WHITE, Color.WHITE],
         [Color.RED, Color.RED, Color.RED, Color.RED, Color.RED, Color.RED, Color.RED, Color.RED, Color.RED],
