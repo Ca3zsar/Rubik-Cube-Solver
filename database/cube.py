@@ -14,6 +14,7 @@ class Color(Enum):
 order = [0, 1, 2, 5, 8, 7, 6, 3]
 unfold_order = [0, 1, 2, 7, 3, 6, 5, 4]
 
+
 def ror(n, rotations, width):
     """
     Rotate a number n of width bits to the right by rotations times.
@@ -28,6 +29,14 @@ def rol(n, rotations, width):
     return (2 ** width - 1) & (n << rotations | n >> (width - rotations))
 
 
+# Solved cube:
+# [Color.RED, Color.RED, Color.RED, Color.RED, Color.RED, Color.RED, Color.RED, Color.RED, Color.RED],
+# [Color.BLUE, Color.BLUE, Color.BLUE, Color.BLUE, Color.BLUE, Color.BLUE, Color.BLUE, Color.BLUE, Color.BLUE],
+# [Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE],
+# [Color.GREEN, Color.GREEN, Color.GREEN, Color.GREEN, Color.GREEN, Color.GREEN, Color.GREEN, Color.GREEN, Color.GREEN],
+# [Color.YELLOW, Color.YELLOW, Color.YELLOW, Color.YELLOW, Color.YELLOW, Color.YELLOW, Color.YELLOW, Color.YELLOW, Color.YELLOW],
+# [Color.ORANGE, Color.ORANGE, Color.ORANGE, Color.ORANGE, Color.ORANGE, Color.ORANGE, Color.ORANGE, Color.ORANGE, Color.ORANGE]
+
 class CubeCompact:
     '''
     A compact cube representation, where faces are represented by half an integer each, without the corners.
@@ -36,26 +45,29 @@ class CubeCompact:
     '''
     __slots__ = ['faces']
 
-    def __init__(self, faces: list[list[Color]]):
+    def __init__(self, faces: list[list[Color]] = None, compact_faces: list[int] = None):
         self.faces = np.zeros(3, dtype=np.int64)
-        for i in range(len(faces)):
-            face_to_update = i // 2
-            half_to_update = i % 2
-            values = [faces[i][index].value for index in order]
-            start = ((half_to_update + 1) % 2) * 32
-            end = start + 32
+        if compact_faces is not None:
+            self.faces = np.copy(compact_faces)
+        elif faces is not None:
+            for i in range(len(faces)):
+                face_to_update = i // 2
+                half_to_update = i % 2
+                values = [faces[i][index].value for index in order]
+                start = ((half_to_update + 1) % 2) * 32
+                end = start + 32
 
-            for index, value in enumerate(values):
-                self.faces[face_to_update] |= (value << (end - (index + 1) * 4))
+                for index, value in enumerate(values):
+                    self.faces[face_to_update] |= (value << (end - (index + 1) * 4))
 
+    @staticmethod
     def up_rotate(self):
         # Rotate the up face
-        first_half = np.int32(self.faces[0] >> 32)
-        rotated = ror(first_half, 8, 32)
+        rotated = ror(self.faces[0] >> 32, 8, 32)
 
         # Change the first layer of the right face
         left_half = self.faces[0] & 0xFFFFFFFF
-        left_first_row = np.uint32(left_half >> 20)
+        left_first_row = np.uint32((self.faces[0] & 0xFFFFFFFF) >> 20)
 
         front_half = self.faces[1] >> 32
         front_first_row = front_half >> 20
@@ -70,14 +82,13 @@ class CubeCompact:
         right_half = (right_half & 0xFFFFF) | (back_first_row << 20)
         back_half = (back_half & 0xFFFFF) | (left_first_row << 20)
 
-        self.faces[0] = left_half | (rotated << 32)
-        self.faces[1] = right_half | (front_half << 32)
-        self.faces[2] = (self.faces[2] & 0xFFFFFFFF) | (back_half << 32)
+        return np.array([left_half | (rotated << 32), right_half | (front_half << 32),
+                         (self.faces[2] & 0xFFFFFFFF) | (back_half << 32)])
 
+    @staticmethod
     def down_rotate(self):
         # Rotate the down face
-        down_half = np.int32(self.faces[2] & 0xFFFFFFFF)
-        rotated = ror(down_half, 8, 32)
+        rotated = ror(self.faces[2] & 0xFFFFFFFF, 8, 32)
 
         left_half = self.faces[0] & 0xFFFFFFFF
         left_last_row = np.uint32((left_half & 0xFFF0) >> 4)
@@ -96,14 +107,14 @@ class CubeCompact:
 
         front_half = (front_half & 0xFFFF0000) | (left_last_row << 4) | (front_half & 0xF)
 
-        self.faces[0] = left_half | (self.faces[0] & 0x7FFFFFFF00000000)
-        self.faces[1] = right_half | (front_half << 32)
-        self.faces[2] = rotated | (back_half << 32)
+        return np.array([left_half | (self.faces[0] & 0x7FFFFFFF00000000),
+                         right_half | (front_half << 32),
+                         rotated | (back_half << 32)])
 
+    @staticmethod
     def left_rotate(self):
         # Rotate the left face
-        left_half = np.int32(self.faces[0] & 0xFFFFFFFF)
-        rotated = ror(left_half, 8, 32)
+        rotated = ror(self.faces[0] & 0xFFFFFFFF, 8, 32)
 
         up_half = self.faces[0] >> 32
         up_first_column = up_half & 0xF00000FF
@@ -122,14 +133,19 @@ class CubeCompact:
 
         front_half = (front_half & 0x0FFFFF00) | up_first_column
 
-        self.faces[0] = rotated | (up_half << 32)
-        self.faces[1] = (front_half << 32) | (self.faces[1] & 0xFFFFFFFF)
-        self.faces[2] = (back_half << 32) | down_half
+        rotated | (up_half << 32)
+        (front_half << 32) | (self.faces[1] & 0xFFFFFFFF)
+        (back_half << 32) | down_half
+        return np.array([
+            rotated | (up_half << 32),
+            (front_half << 32) | (self.faces[1] & 0xFFFFFFFF),
+            (back_half << 32) | down_half
+        ])
 
+    @staticmethod
     def right_rotate(self):
         # Rotate the right face
-        right_half = np.int32(self.faces[1] & 0xFFFFFFFF)
-        rotated = ror(right_half, 8, 32)
+        rotated = ror(self.faces[1] & 0xFFFFFFFF, 8, 32)
 
         up_half = self.faces[0] >> 32
         up_third_column = up_half & 0x00FFF000
@@ -148,13 +164,15 @@ class CubeCompact:
 
         back_half = (back_half & 0x0FFFFF00) | rol(up_third_column, 16, 32)
 
-        self.faces[0] = (up_half << 32) | (self.faces[0] & 0xFFFFFFFF)
-        self.faces[1] = rotated | (front_half << 32)
-        self.faces[2] = (back_half << 32) | (down_half & 0xFFFFFFFF)
+        return np.array([
+            (up_half << 32) | (self.faces[0] & 0xFFFFFFFF),
+            rotated | (front_half << 32),
+            (back_half << 32) | (down_half & 0xFFFFFFFF)
+        ])
 
+    @staticmethod
     def front_rotate(self):
-        front_half = np.int32(self.faces[1] >> 32)
-        rotated = ror(front_half, 8, 32)
+        rotated = ror(self.faces[1] >> 32, 8, 32)
 
         up_half = self.faces[0] >> 32
         up_last_row = up_half & 0x0000FFF0
@@ -173,13 +191,15 @@ class CubeCompact:
 
         right_half = (right_half & 0x0FFFFF00) | ror(up_last_row, 8, 32)
 
-        self.faces[0] = (up_half << 32) | left_half
-        self.faces[1] = (rotated << 32) | right_half
-        self.faces[2] = (self.faces[2] & 0x7FFFFFFF00000000) | down_half
+        return np.array([
+            (up_half << 32) | left_half,
+            (rotated << 32) | right_half,
+            (self.faces[2] & 0x7FFFFFFF00000000) | down_half
+        ])
 
+    @staticmethod
     def back_rotate(self):
-        back_half = np.int32(self.faces[2] >> 32)
-        rotated = ror(back_half, 8, 32)
+        rotated = ror(self.faces[2] >> 32, 8, 32)
 
         up_half = self.faces[0] >> 32
         up_first_row = up_half & 0xFFF00000
@@ -198,14 +218,16 @@ class CubeCompact:
 
         left_half = (left_half & 0x0FFFFF00) | rol(up_first_row, 8, 32)
 
-        self.faces[0] = (up_half << 32) | left_half
-        self.faces[1] = (self.faces[1] & 0x7FFFFFFF00000000) | right_half
-        self.faces[2] = (rotated << 32) | down_half
+        return np.array([
+            (up_half << 32) | left_half,
+            (self.faces[1] & 0x7FFFFFFF00000000) | right_half,
+            (rotated << 32) | down_half
+        ])
 
+    @staticmethod
     def up_rotate_counter(self):
         # Rotate the up face
-        first_half = np.int32(self.faces[0] >> 32)
-        rotated = rol(first_half, 8, 32)
+        rotated = rol(self.faces[0] >> 32, 8, 32)
 
         left_half = np.int32(self.faces[0] & 0xFFFFFFFF)
         left_first_row = np.int32(left_half >> 20)
@@ -224,14 +246,16 @@ class CubeCompact:
 
         front_half = (front_half & 0xFFFFF) | (left_first_row << 20)
 
-        self.faces[0] = left_half | (rotated << 32)
-        self.faces[1] = right_half | (front_half << 32)
-        self.faces[2] = (self.faces[2] & 0xFFFFFFFF) | (back_half << 32)
+        return np.array([
+            left_half | (rotated << 32),
+            right_half | (front_half << 32),
+            (self.faces[2] & 0xFFFFFFFF) | (back_half << 32)
+        ])
 
+    @staticmethod
     def down_rotate_counter(self):
         # Rotate the down face
-        down_half = np.int32(self.faces[2] & 0xFFFFFFFF)
-        rotated = rol(down_half, 8, 32)
+        rotated = rol(self.faces[2] & 0xFFFFFFFF, 8, 32)
 
         left_half = np.int32(self.faces[0] & 0xFFFFFFFF)
         left_last_row = np.int32((left_half & 0xFFF0) >> 4)
@@ -250,14 +274,16 @@ class CubeCompact:
 
         back_half = (back_half & 0xFFFF0000) | (left_last_row << 4) | (back_half & 0xF)
 
-        self.faces[0] = left_half | (self.faces[0] & 0x7FFFFFFF00000000)
-        self.faces[1] = right_half | (front_half << 32)
-        self.faces[2] = rotated | (back_half << 32)
+        return np.array([
+            left_half | (self.faces[0] & 0x7FFFFFFF00000000),
+            right_half | (front_half << 32),
+            rotated | (back_half << 32)
+        ])
 
+    @staticmethod
     def left_rotate_counter(self):
         # Rotate the left face
-        left_half = np.int32(self.faces[0] & 0xFFFFFFFF)
-        rotated = rol(left_half, 8, 32)
+        rotated = rol(self.faces[0] & 0xFFFFFFFF, 8, 32)
 
         up_half = self.faces[0] >> 32
         up_first_column = up_half & 0xF00000FF
@@ -276,14 +302,16 @@ class CubeCompact:
 
         back_half = (back_half & 0xFF000FFF) | ror(up_first_column, 16, 32)
 
-        self.faces[0] = rotated | (up_half << 32)
-        self.faces[1] = (front_half << 32) | (self.faces[1] & 0xFFFFFFFF)
-        self.faces[2] = (back_half << 32) | down_half
+        return np.array([
+            rotated | (up_half << 32),
+            (front_half << 32) | (self.faces[1] & 0xFFFFFFFF),
+            (back_half << 32) | down_half
+        ])
 
+    @staticmethod
     def right_rotate_counter(self):
         # Rotate the right face
-        right_half = np.int32(self.faces[1] & 0xFFFFFFFF)
-        rotated = rol(right_half, 8, 32)
+        rotated = rol(self.faces[1] & 0xFFFFFFFF, 8, 32)
 
         up_half = self.faces[0] >> 32
         up_third_column = up_half & 0x00FFF000
@@ -300,16 +328,18 @@ class CubeCompact:
         front_third_column = front_half & 0x00FFF000
         down_half = (down_half & 0xFF000FFF) | front_third_column
 
-        front_half = (front_half & 0xFFFFF00F) | up_third_column
+        front_half = (front_half & 0xFF000FFF) | up_third_column
 
-        self.faces[0] = (up_half << 32) | (self.faces[0] & 0xFFFFFFFF)
-        self.faces[1] = rotated | (front_half << 32)
-        self.faces[2] = (back_half << 32) | down_half
+        return np.array([
+            (up_half << 32) | (self.faces[0] & 0xFFFFFFFF),
+            rotated | (front_half << 32),
+            (back_half << 32) | down_half
+        ])
 
+    @staticmethod
     def front_rotate_counter(self):
         # Rotate the front face
-        front_half = np.int32(self.faces[1] >> 32)
-        rotated = rol(front_half, 8, 32)
+        rotated = rol(self.faces[1] >> 32, 8, 32)
 
         up_half = self.faces[0] >> 32
         up_last_row = up_half & 0x0000FFF0
@@ -328,13 +358,14 @@ class CubeCompact:
 
         left_half = (left_half & 0xFF000FFF) | rol(up_last_row, 8, 32)
 
-        self.faces[0] = (up_half << 32) | left_half
-        self.faces[1] = (rotated << 32) | right_half
-        self.faces[2] = (self.faces[2] & 0x7FFFFFFF00000000) | down_half
+        return np.array([(up_half << 32) | left_half,
+                         (rotated << 32) | right_half,
+                         (self.faces[2] & 0x7FFFFFFF00000000) | down_half
+                         ])
 
+    @staticmethod
     def back_rotate_counter(self):
-        back_half = np.int32(self.faces[2] >> 32)
-        rotated = rol(back_half, 8, 32)
+        rotated = rol(self.faces[2] >> 32, 8, 32)
 
         up_half = self.faces[0] >> 32
         up_first_row = up_half & 0xFFF00000
@@ -353,15 +384,16 @@ class CubeCompact:
 
         right_half = (right_half & 0xFF000FFF) | ror(up_first_row, 8, 32)
 
-        self.faces[0] = (up_half << 32) | left_half
-        self.faces[1] = (self.faces[1] & 0x7FFFFFFF00000000) | right_half
-        self.faces[2] = (rotated << 32) | down_half
+        return np.array([
+            (up_half << 32) | left_half,
+            (self.faces[1] & 0x7FFFFFFF00000000) | right_half,
+            (rotated << 32) | down_half
+        ])
 
+    @staticmethod
     def up_rotate_twice(self):
         # Rotate the up face twice
-        # Rotate the up face
-        first_half = np.int32(self.faces[0] >> 32)
-        rotated = ror(first_half, 16, 32)
+        rotated = ror(self.faces[0] >> 32, 16, 32)
 
         left_half = self.faces[0] & 0xFFFFFFFF
         left_first_row = np.uint32(left_half >> 20)
@@ -380,13 +412,15 @@ class CubeCompact:
         right_half = (right_half & 0xFFFFF) | (left_first_row << 20)
         back_half = (back_half & 0xFFFFF) | (front_first_row << 20)
 
-        self.faces[0] = left_half | (rotated << 32)
-        self.faces[1] = right_half | (front_half << 32)
-        self.faces[2] = (self.faces[2] & 0xFFFFFFFF) | (back_half << 32)
+        return np.array([
+            left_half | (rotated << 32),
+            right_half | (front_half << 32),
+            (self.faces[2] & 0xFFFFFFFF) | (back_half << 32)
+        ])
 
+    @staticmethod
     def down_rotate_twice(self):
-        down_half = np.int32(self.faces[2] & 0xFFFFFFFF)
-        rotated = ror(down_half, 16, 32)
+        rotated = ror(self.faces[2] & 0xFFFFFFFF, 16, 32)
 
         left_half = self.faces[0] & 0xFFFFFFFF
         left_last_row = np.uint32((left_half & 0xFFF0) >> 4)
@@ -405,13 +439,15 @@ class CubeCompact:
         front_half = (front_half & 0xFFFF0000) | (back_last_row << 4) | (front_half & 0xF)
         right_half = (right_half & 0xFFFF0000) | (left_last_row << 4) | (right_half & 0xF)
 
-        self.faces[0] = left_half | (self.faces[0] & 0x7FFFFFFF00000000)
-        self.faces[1] = right_half | (front_half << 32)
-        self.faces[2] = rotated | (back_half << 32)
+        return np.array([
+            left_half | (self.faces[0] & 0x7FFFFFFF00000000),
+            right_half | (front_half << 32),
+            rotated | (back_half << 32)
+        ])
 
+    @staticmethod
     def front_rotate_twice(self):
-        front_half = np.int32(self.faces[1] >> 32)
-        rotated = ror(front_half, 16, 32)
+        rotated = ror(self.faces[1] >> 32, 16, 32)
 
         up_half = self.faces[0] >> 32
         up_last_row = up_half & 0x0000FFF0
@@ -430,13 +466,15 @@ class CubeCompact:
         right_half = (right_half & 0x0FFFFF00) | ror(left_third_column, 16, 32)
         down_half = (down_half & 0x000FFFFF) | ror(up_last_row, 16, 32)
 
-        self.faces[0] = (up_half << 32) | left_half
-        self.faces[1] = (rotated << 32) | right_half
-        self.faces[2] = (self.faces[2] & 0x7FFFFFFF00000000) | down_half
+        return np.array([
+            (up_half << 32) | left_half,
+            (rotated << 32) | right_half,
+            (self.faces[2] & 0x7FFFFFFF00000000) | down_half
+        ])
 
+    @staticmethod
     def back_rotate_twice(self):
-        back_half = np.int32(self.faces[2] >> 32)
-        rotated = ror(back_half, 16, 32)
+        rotated = ror(self.faces[2] >> 32, 16, 32)
 
         up_half = self.faces[0] >> 32
         up_first_row = up_half & 0xFFF00000
@@ -455,13 +493,15 @@ class CubeCompact:
         up_half = (up_half & 0x000FFFFF) | rol(down_last_row, 16, 32)
         left_half = (left_half & 0x0FFFFF00) | rol(right_third_column, 16, 32)
 
-        self.faces[0] = (up_half << 32) | left_half
-        self.faces[1] = (self.faces[1] & 0x7FFFFFFF00000000) | right_half
-        self.faces[2] = (rotated << 32) | down_half
+        return np.array([
+            (up_half << 32) | left_half,
+            (self.faces[1] & 0x7FFFFFFF00000000) | right_half,
+            (rotated << 32) | down_half
+        ])
 
+    @staticmethod
     def left_rotate_twice(self):
-        left_half = np.int32(self.faces[0] & 0xFFFFFFFF)
-        rotated = ror(left_half, 16, 32)
+        rotated = ror(self.faces[0] & 0xFFFFFFFF, 16, 32)
 
         up_half = self.faces[0] >> 32
         up_first_column = up_half & 0xF00000FF
@@ -480,13 +520,15 @@ class CubeCompact:
         up_half = (up_half & 0x0FFFFF00) | down_first_column
         front_half = (front_half & 0x0FFFFF00) | ror(back_third_column, 16, 32)
 
-        self.faces[0] = rotated | (up_half << 32)
-        self.faces[1] = (front_half << 32) | (self.faces[1] & 0xFFFFFFFF)
-        self.faces[2] = (back_half << 32) | down_half
+        return np.array([
+            rotated | (up_half << 32),
+            (front_half << 32) | (self.faces[1] & 0xFFFFFFFF),
+            (back_half << 32) | down_half
+        ])
 
+    @staticmethod
     def right_rotate_twice(self):
-        right_half = np.int32(self.faces[1] & 0xFFFFFFFF)
-        rotated = ror(right_half, 16, 32)
+        rotated = ror(self.faces[1] & 0xFFFFFFFF, 16, 32)
 
         up_half = self.faces[0] >> 32
         up_third_column = up_half & 0x00FFF000
@@ -505,9 +547,11 @@ class CubeCompact:
         up_half = (up_half & 0xFF000FFF) | down_third_column
         back_half = (back_half & 0x0FFFFF00) | rol(front_third_column, 16, 32)
 
-        self.faces[0] = (up_half << 32) | (self.faces[0] & 0xFFFFFFFF)
-        self.faces[1] = rotated | (front_half << 32)
-        self.faces[2] = (back_half << 32) | (down_half & 0xFFFFFFFF)
+        return np.array([
+            (up_half << 32) | (self.faces[0] & 0xFFFFFFFF),
+            rotated | (front_half << 32),
+            (back_half << 32) | (down_half & 0xFFFFFFFF)
+        ])
 
     def __repr__(self):
         current_color = 0
