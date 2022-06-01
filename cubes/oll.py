@@ -1,6 +1,11 @@
 from . import utils
 
 
+def oll_1(front, left, right, back, up_color):
+    return utils.line_in_single_color(left, 0, up_color) and utils.line_in_single_color(right, 0, up_color) and \
+            front.face_matrix[0][1] == back.face_matrix[0][1] == up_color
+
+
 def oll_9(front, left, right, back, up, up_color):
     return back.face_matrix[0][0] == up_color and right.face_matrix[0][1] == up_color and \
             left.face_matrix[0][0] == up_color and up.face_matrix[2][2] == up_color and \

@@ -1,12 +1,10 @@
 import sys
 
-import numpy as np
-
 from cube import CubeCompact, Color
 import db_fill
 from time import perf_counter
 
-solved = CubeCompact(
+solved = CubeCompact.create_cube(
         [
             [Color.RED, Color.RED, Color.RED, Color.RED, Color.RED, Color.RED, Color.RED, Color.RED, Color.RED],
             [Color.BLUE, Color.BLUE, Color.BLUE, Color.BLUE, Color.BLUE, Color.BLUE, Color.BLUE, Color.BLUE,
@@ -30,5 +28,16 @@ def test(depth=1):
     print(end - start)
     return res
 
+
+def solve():
+    start = perf_counter()
+
+    scrambled = db_fill.get_scrambled_cube(solved)
+    res = db_fill.cube_bfs_solve(scrambled, solved, 6)
+    end = perf_counter()
+    print(end - start)
+    print(res)
+
 if __name__ == '__main__':
-    test(int(sys.argv[1]))
+    # test(int(sys.argv[1]))
+    solve()

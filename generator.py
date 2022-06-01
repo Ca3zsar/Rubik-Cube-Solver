@@ -35,3 +35,9 @@ def generate():
 
     # print(solved_cube)
     return faces
+
+
+if __name__ == "__main__":
+    faces = generate()
+    for i in range(6):
+        print(faces[i*9:i*9+9])
