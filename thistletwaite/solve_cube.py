@@ -9,7 +9,7 @@ phase_moves = [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
                [1, 4, 7, 10, 13, 16]]
 
 
-#"UF", "UR", "UB", "UL", "DF", "DR", "DB", "DL", "FR", "FL", "BR", "BL",
+# "UF", "UR", "UB", "UL", "DF", "DR", "DB", "DL", "FR", "FL", "BR", "BL",
 # "UFR", "URB", "UBL", "ULF", "DRF", "DFL", "DLB", "DBR"
 
 
@@ -46,12 +46,19 @@ class CubeState:
     def apply_move(self, move):
         face, turns = move // 3, move % 3 + 1
         newstate = self.state[:]
+        counter = False
+        if turns == 3:
+            turns = 1
+            counter = True
         for turn in range(turns):
             oldstate = newstate[:]
             for i in range(8):
                 isCorner = int(i > 3)
                 target = affected_cubies[face][i] + isCorner * 12
-                killer = affected_cubies[face][(i - 3) if (i & 3) == 3 else i + 1] + isCorner * 12
+                if not counter:
+                    killer = affected_cubies[face][(i - 3) if (i & 3) == 3 else i + 1] + isCorner * 12
+                else:
+                    killer = affected_cubies[face][(i + 3) if (i & 3) == 0 else i - 1] + isCorner * 12
                 # print(target, killer)
                 orientationDelta = int(1 < face < 4) if i < 4 else (0 if face < 2 else 2 - (i & 1))
                 newstate[target] = oldstate[killer]
@@ -61,22 +68,20 @@ class CubeState:
         return CubeState(newstate, self.route + [move])
 
 
-def test(test_state = None):
-    start = perf_counter()
+def test(test_state=None, debug=False):
     goal_state = CubeState(list(range(20)) + 20 * [0])
     if test_state:
         state = CubeState(test_state.permutation)
-        print(test_state)
+        # print(test_state)
     else:
         state = CubeState(goal_state.state[:])
-        moves = [random.randint(0, 17) for _ in range(10)]
-        print(' '.join([move_str(move) for move in moves]) + '\n')
+        moves = [random.randint(0, 17) for _ in range(30)]
+        # print(' '.join([move_str(move) for move in moves]) + '\n')
 
         for move in moves:
             state = state.apply_move(move)
 
     state.route = []
-    # print('*** solve ***')
 
     for phase in range(4):
         current_id, goal_id = state.id_(phase), goal_state.id_(phase)
@@ -86,6 +91,7 @@ def test(test_state = None):
             phase_ok = False
             while not phase_ok:
                 next_states = []
+                possible_variants = []
                 for cur_state in states:
                     for move in phase_moves[phase]:
                         if cur_state.route and move // 3 == cur_state.route[-1] // 3:
@@ -97,19 +103,27 @@ def test(test_state = None):
                         next_state = cur_state.apply_move(move)
                         next_id = next_state.id_(phase)
                         if next_id == goal_id:
-                            print(' '.join([move_str(m) for m in next_state.route]) + ' (%d moves)' % len(next_state.route))
+                            possible_variants.append(next_state)
+
                             phase_ok = True
-                            state = next_state
-                            break
                         if next_id not in state_ids:
                             state_ids.add(next_id)
                             next_states.append(next_state)
-                    if phase_ok:
-                        break
-                states = next_states
-    stop = perf_counter()
 
-    print(stop-start)
+                if possible_variants:
+                    found = False
+                    for cur_state in possible_variants:
+                        if cur_state.state == goal_state.state:
+                            state = cur_state
+                            found = True
+                            break
+                    if not found:
+                        state = random.choice(possible_variants)
+
+                states = next_states
+    # return ' '.join([move_str(m) for m in state.route]) + ' (%d moves)' % len(state.route)
+    return state.route
+
 
 if __name__ == "__main__":
     test()

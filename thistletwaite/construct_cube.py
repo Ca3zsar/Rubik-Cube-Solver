@@ -10,9 +10,9 @@ faces_strings = ["U", "D", "F", "B", "L", "R"]
 edges_ind = ["UF", "UR", "UB", "UL", "DF", "DR", "DB", "DL", "FR", "FL", "BR", "BL"]
 corners_ind = ["UFR", "URB", "UBL", "ULF", "DRF", "DFL", "DLB", "DBR"]
 
+
 class CubeRepresentation:
     def __init__(self, centers, cube):
-        print(cube)
         self.edges = []
         self.corners = []
         self.generate_cubies(centers)
@@ -95,11 +95,8 @@ class CubeRepresentation:
             self.set_piece(current_piece, piece_index, self.get_corner_index)
             piece_index += 1
 
-        print(self.permutation)
-
     def set_piece(self, current_piece, piece_index, callback):
         found = False
-        print(current_piece)
         while not found:
             pos = callback(current_piece)
             if pos is not None:

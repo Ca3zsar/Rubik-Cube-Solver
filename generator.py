@@ -14,7 +14,7 @@ opposites = {
 def generate():
     solved_cube = RubikCube()
 
-    moves = random.randint(20, 21)
+    moves = random.randint(50, 51)
     last_two_moves = [None, None]
     for i in range(moves):
         if last_two_moves[1] is not None and last_two_moves[0] == opposites[last_two_moves[1]]:
