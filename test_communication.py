@@ -7,12 +7,15 @@ from time import perf_counter
 import serial
 import time
 
-serial_comm = serial.Serial('COM3', 9600)
+serial_comm = serial.Serial('COM6', 9600)
 serial_comm.timeout = 0.1
-
+time.sleep(2)
+serial_comm.readline().decode()
 def main():
-    faces = generator.generate()
+    faces = generator.generate(moves=10)
     rubik = cube.RubikCube(faces)
+    # rubik.make_rotation(els.FaceDirection.UP, True)
+
     print(rubik)
     print("---------end_cube----------")
     centers = [
@@ -30,7 +33,7 @@ def main():
     print("-------------------")
 
     content = " ".join(map(str, solution))
-    print(content)
+    print(content+'\n')
     serial_comm.write((content + '\n').encode())
     time.sleep(1)
     print(serial_comm.readline().decode())

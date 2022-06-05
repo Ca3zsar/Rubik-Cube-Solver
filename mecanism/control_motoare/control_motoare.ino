@@ -8,6 +8,8 @@ boolean newData = false;
 int moves[100];
 int numberOfMoves = 0;
 
+int faces[] = {0, 4, 5, 2 , 1, 3  };
+
 Stepper *steppers[6];
 String command;
 int int_comm;
@@ -25,21 +27,21 @@ void setup() {
   Serial.println("Begin configuring motors");
 
   int start = 22;
-//  for(int i=0;i<6;i++)
-//  {
-//    steppers[i] = new Stepper(stepsPerRevolution, start + i*4, start + i*4 + 1, start + i*4 + 2, start + i*4 + 3);
-//    steppers[i]->setSpeed(20);
-//  }
+  for(int i=0;i<6;i++)
+  {
+    steppers[i] = new Stepper(stepsPerRevolution, start + i*4, start + i*4 + 1, start + i*4 + 2, start + i*4 + 3);
+    steppers[i]->setSpeed(40);
+  }
 }
 
 void loop() {
     numberOfMoves = 0;
     recvWithEndMarker();
     parseData();
-//    if(numberOfMoves)
-//    {
-//      solveCube();   
-//    }
+    if(numberOfMoves)
+    {
+      solveCube();   
+    }
 }
 
 void solveCube()
@@ -59,8 +61,11 @@ void solveCube()
         case 2: steps = -stepsPerRevolution / 4;break;
         default : break;
       }
-      steppers[face]->step(steps);
-      setStepperIdle(face);
+      steppers[faces[face]]->step(0);
+      steppers[faces[face]]->step(steps);
+      
+      delay(100);
+      setStepperIdle(faces[face]);
     }
   }
 }
@@ -90,6 +95,8 @@ void recvWithEndMarker() {
 
 void parseData() {
     if (newData == true) {
+              Serial.println(receivedChars);
+
         char * pch;
         pch = strtok (receivedChars," ");
         moves[numberOfMoves++] = atoi(pch);
@@ -102,7 +109,6 @@ void parseData() {
             moves[numberOfMoves++] = atoi(pch);
           }
         }
-        Serial.println(String(numberOfMoves));
         newData = false;
     }
 }
