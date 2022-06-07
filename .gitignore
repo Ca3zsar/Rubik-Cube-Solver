@@ -2,3 +2,7 @@
 *.pyc
 *.iml
 *.xml
+/recognition/failed
+*.jpg
+*.png
+recognition/samples/expected.txt

@@ -22,6 +22,7 @@ void setStepperIdle(int motor) {
   digitalWrite(start + motor*4 + 3, LOW);
 }
 
+
 void setup() {
   Serial.begin(9600);
   Serial.println("Begin configuring motors");
@@ -31,6 +32,7 @@ void setup() {
   {
     steppers[i] = new Stepper(stepsPerRevolution, start + i*4, start + i*4 + 1, start + i*4 + 2, start + i*4 + 3);
     steppers[i]->setSpeed(40);
+    steppers[i]->step(0);
   }
 }
 
@@ -54,17 +56,21 @@ void solveCube()
       int face = command / 3;
       int turns = command % 3;
       int steps = 0;
+      int extra = 2;
       switch(turns)
       {
-        case 0: steps = stepsPerRevolution / 4;break;
-        case 1: steps = stepsPerRevolution / 2;break;
-        case 2: steps = -stepsPerRevolution / 4;break;
+        case 0: steps =-  stepsPerRevolution / 4 ;break;
+        case 1: steps = stepsPerRevolution / 2 ;break;
+        case 2: steps = stepsPerRevolution / 4 ;break;
         default : break;
       }
-      steppers[faces[face]]->step(0);
+//      steppers[faces[face]]->step(1);
+//      steppers[faces[face]]->step(-1);
+//      delay(100);
+      
       steppers[faces[face]]->step(steps);
       
-      delay(100);
+      delay(200);
       setStepperIdle(faces[face]);
     }
   }

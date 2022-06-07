@@ -12,8 +12,9 @@ serial_comm.timeout = 0.1
 time.sleep(2)
 serial_comm.readline().decode()
 def main():
-    faces = generator.generate(moves=10)
-    rubik = cube.RubikCube(faces)
+    # faces = generator.generate(moves=10)
+    rubik = cube.RubikCube()
+    rubik.complex_rotation("URFU")
     # rubik.make_rotation(els.FaceDirection.UP, True)
 
     print(rubik)
