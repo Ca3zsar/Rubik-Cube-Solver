@@ -25,13 +25,12 @@ void setStepperIdle(int motor) {
 
 void setup() {
   Serial.begin(9600);
-  Serial.println("Begin configuring motors");
 
   int start = 22;
   for(int i=0;i<6;i++)
   {
     steppers[i] = new Stepper(stepsPerRevolution, start + i*4, start + i*4 + 1, start + i*4 + 2, start + i*4 + 3);
-    steppers[i]->setSpeed(40);
+    steppers[i]->setSpeed(100);
     steppers[i]->step(0);
   }
 }
@@ -74,6 +73,7 @@ void solveCube()
       setStepperIdle(faces[face]);
     }
   }
+  Serial.print("done");
 }
 
 void recvWithEndMarker() {
@@ -101,17 +101,13 @@ void recvWithEndMarker() {
 
 void parseData() {
     if (newData == true) {
-              Serial.println(receivedChars);
-
         char * pch;
         pch = strtok (receivedChars," ");
         moves[numberOfMoves++] = atoi(pch);
-        Serial.println(pch);
         while (pch != NULL)
         {
           pch = strtok (NULL, " ,.-");
           if(pch != NULL){
-            Serial.println(pch);
             moves[numberOfMoves++] = atoi(pch);
           }
         }

@@ -14,20 +14,13 @@ ORANGE = (255, 128, 0)
 GRAY = (128,128,128)
 
 indexes = {
-    WHITE : 0,
-    YELLOW : 1,
-    ORANGE : 2,
+    WHITE : 2,
+    YELLOW : 4,
+    ORANGE : 5,
     GREEN : 3,
-    BLUE : 4,
-    RED : 5,
+    BLUE : 1,
+    RED : 0,
 }
-
-#0-white
-#1-yellow
-#2-orange
-#3-green
-#4-blue
-#5-red
 
 faces_config = []
 
@@ -129,36 +122,34 @@ def draw_grid(image, face):
 
     for i in range(3):
         for j in range(3):
-            up_left = (int(boundaries[face][i][0] * image.shape[1]), int(boundaries[face][j][1] * image.shape[0]))
-            up_right = (int(boundaries[face][i+1][0] * image.shape[1]), int(boundaries[face][j][1] * image.shape[0]))
-            down_left = (int(boundaries[face][i][0] * image.shape[1]), int(boundaries[face][j+1][1] * image.shape[0]))
-            down_right = (int(boundaries[face][i+1][0] * image.shape[1]), int(boundaries[face][j+1][1] * image.shape[0]))
+            up_left = (int(boundaries[face][j][0] * image.shape[1]), int(boundaries[face][i][1] * image.shape[0]))
+            up_right = (int(boundaries[face][j+1][0] * image.shape[1]), int(boundaries[face][i][1] * image.shape[0]))
+            down_left = (int(boundaries[face][j][0] * image.shape[1]), int(boundaries[face][i+1][1] * image.shape[0]))
+            down_right = (int(boundaries[face][j+1][0] * image.shape[1]), int(boundaries[face][i+1][1] * image.shape[0]))
 
             cubie = image[up_left[1]+10:down_left[1]-10, up_left[0]+10:up_right[0]-10]
-            mean_color = np.array([0,0,0])
-            if face == 'left' and i ==0 and j == 2:
-                cubie = increase_brightness(cubie, value=30)
-            if face == 'up' and i == 0 and j == 2:
-                cubie -= 30
-            colors_number = 0
-            for row in cubie:
-                for color in row:
-                    if color[0] != 0 or color[1] != 0 or color[2] != 0:
-                        mean_color[0] += color[0]
-                        mean_color[1] += color[1]
-                        mean_color[2] += color[2]
-                        colors_number += 1
-            
-            mean_color = mean_color / colors_number
-            mean_color[np.argmin(mean_color)] = max(mean_color[np.argmin(mean_color)] - 10, 0)
-            
+
+            # mean_color = np.array([0,0,0])
+            # colors_number = 0
+            # for row in cubie:
+            #     for color in row:
+            #         if color[0] != 0 or color[1] != 0 or color[2] != 0:
+            #             mean_color[0] += color[0]
+            #             mean_color[1] += color[1]
+            #             mean_color[2] += color[2]
+            #             colors_number += 1
+
+            # mean_color = mean_color / colors_number
+
+            cubie = cubie[np.where((cubie[:,:,0] != 0) | (cubie[:,:,1] != 0) | (cubie[:,:,2] != 0))]
+            mean_color = np.mean(cubie, axis=0)
             # print(faces_config)
-            cv.fillPoly(image, np.array([[up_left, up_right, down_right, down_left]], dtype=np.int32), tuple(mean_color))
+            cv.fillPoly(image, np.array([[up_left, up_right, down_right, down_left]], dtype=np.int32), mean_color)
             color = compute_color(mean_color[::-1])
             
             faces_config.append(indexes[color])
             
-    #         print(f"{i} {j} {mean_color[::-1]}")
+            # print(f"{i} {j} {mean_color[::-1]}")
     #         print(f"{i} {j} {color}")
     #         print("------")
     # print("-----------------------------------------------------")
@@ -175,7 +166,6 @@ def warp_cube(image):
     left_face = get_face(image, left_corners, (0, 255, 0))
     M = cv.getPerspectiveTransform(np.float32(left_corners), np.float32(new_corners))
     left_warped = cv.warpPerspective(left_face,M,(420,420))[5:-5,5:-5]
-    # left_warped += 10
 
     right_face = get_face(image, right_corners, (255, 0, 0))
     M = cv.getPerspectiveTransform(np.float32(right_corners), np.float32(new_corners))
@@ -184,9 +174,7 @@ def warp_cube(image):
     up_face = get_face(image, up_corners, (0, 0, 255))
     M = cv.getPerspectiveTransform(np.float32(up_corners), np.float32(new_corners))
     up_warped = cv.warpPerspective(up_face,M,(420,420), flags=cv.INTER_LINEAR)[5:-5,5:-5]
-    
-    #Darken up face
-    # up_warped -= 30
+    up_warped = cv.rotate(up_warped, cv.ROTATE_90_COUNTERCLOCKWISE)
 
     return left_warped, right_warped, up_warped
 
@@ -201,7 +189,6 @@ def apply_operations(**options):
     return_data = options.get('return_data', False)
 
     img = cv.imread(cv.samples.findFile(image_name))
-
     if img is None:
         sys.exit("Could not read the image.")
 
