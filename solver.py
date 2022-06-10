@@ -35,7 +35,7 @@ def main():
     ]
 
     cube_state = construct.CubeRepresentation(centers, rubik)
-    solution = solve.test(cube_state, True)
+    solution = solve.test(cube_state, False)
     print(f"{len(solution)}  moves :::{solution} ")
     stop = perf_counter()
     print(stop - start)

@@ -1,6 +1,7 @@
 import random
 from time import perf_counter
 import collections
+from tkinter.messagebox import NO
 
 face_names = ["U", "D", "F", "B", "L", "R"]
 affected_cubies = [[0, 1, 2, 3, 0, 1, 2, 3], [4, 7, 6, 5, 4, 5, 6, 7], [0, 9, 4, 8, 0, 3, 5, 4],
@@ -78,13 +79,8 @@ def test(test_state=None, debug=False):
         state = CubeState(test_state.permutation)
         print(test_state)
     else:
-        state = CubeState(goal_state.state[:])
-        moves = [random.randint(0, 17) for _ in range(30)]
-        print(' '.join([move_str(move) for move in moves]) + '\n')
-
-        for move in moves:
-            state = state.apply_move(move)
-
+        return None
+        
     state.route = []
     SOLUTION = []
 
@@ -147,9 +143,11 @@ def test(test_state=None, debug=False):
 
             if phase_ok:
                 break
-
-    print(len(SOLUTION))
-    print(' '.join(map(move_str,SOLUTION)))
+    
+    if debug:
+        print(len(SOLUTION))
+        print(' '.join(map(move_str,SOLUTION)))
+    return SOLUTION
         
 
 
