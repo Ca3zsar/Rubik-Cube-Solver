@@ -11,7 +11,7 @@ opposites = {
     }
 
 
-def generate(moves=20):
+def generate(moves=30):
     solved_cube = RubikCube()
 
     last_two_moves = [None, None]

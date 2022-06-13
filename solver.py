@@ -17,12 +17,12 @@ def read_cube():
 
 def main():
     existent = "-file" in sys.argv
-
     start = perf_counter()
     if not existent:
         faces = generator.generate()
     else:
         faces = read_cube()
+        
     rubik = cube.RubikCube(faces)
 
     centers = [

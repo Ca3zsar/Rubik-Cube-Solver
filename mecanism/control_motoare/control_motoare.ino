@@ -56,6 +56,7 @@ void solveCube()
       int turns = command % 3;
       int steps = 0;
       int extra = 2;
+      int sign = turns == 0?-1:1;
       switch(turns)
       {
         case 0: steps =-  stepsPerRevolution / 4 ;break;
@@ -66,11 +67,14 @@ void solveCube()
 //      steppers[faces[face]]->step(1);
 //      steppers[faces[face]]->step(-1);
 //      delay(100);
-      
+//      if(face == 4)
+//      {
+//          steps = steps + sign * 1;
+//      }
       steppers[faces[face]]->step(steps);
       
-      delay(200);
       setStepperIdle(faces[face]);
+      delay(2500);
     }
   }
   Serial.print("done");

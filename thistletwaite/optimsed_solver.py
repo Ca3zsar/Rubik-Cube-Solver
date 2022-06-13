@@ -4,7 +4,7 @@ face_names = ["U", "D", "F", "B", "L", "R"]
 affected_cubies = [[0, 1, 2, 3, 0, 1, 2, 3], [4, 7, 6, 5, 4, 5, 6, 7], [0, 9, 4, 8, 0, 3, 5, 4],
                    [2, 10, 6, 11, 2, 1, 7, 6], [3, 11, 7, 9, 3, 2, 6, 5], [1, 8, 5, 10, 1, 0, 4, 7]]
 phase_moves = [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
-               [0, 1, 2, 3, 4, 5, 7, 10, 12, 13, 14, 15, 16, 17], [0, 1, 2, 3, 4, 5, 7, 10, 13, 16],
+               [0, 1, 2, 3, 4, 5, 7, 10, 13, 16],
                [1, 4, 7, 10, 13, 16]]
 
 
@@ -18,18 +18,18 @@ def inverse_move(move):
     return move + 2 - 2 * (move % 3)
 
 class CubeState:
-    def __init__(self, state):
+    def __init__(self, state, route=None):
         self.state = state
+        self.route = route or []
 
-    def compute_id(self, phase):
+    def id_(self, phase):
         if phase == 0:
-            return tuple(self.state[20:32])
-        elif phase == 1:
-            result = self.state[31:40]
+            result = [[], 0]
+            result[0] = tuple(self.state[20:40])
             for e in range(12):
-                result[0] |= (self.state[e] // 8) << e
+                result[1] |= (self.state[e] // 8) << e
             return tuple(result)
-        elif phase == 2:
+        elif phase == 1:
             result = [0, 0, 0]
             for e in range(12):
                 result[0] |= (2 if (self.state[e] > 7) else (self.state[e] & 1)) << (2 * e)
@@ -44,28 +44,49 @@ class CubeState:
 
     def apply_move(self, move):
         face, turns = move // 3, move % 3 + 1
-        new_state = self.state[:]
+        newstate = self.state[:]
         counter = False
         if turns == 3:
             turns = 1
             counter = True
         for turn in range(turns):
-            oldstate = new_state[:]
+            oldstate = newstate[:]
             for i in range(8):
-                is_corner = int(i > 3)
-                affected_cubie = affected_cubies[face][i] + is_corner * 12
+                isCorner = int(i > 3)
+                target = affected_cubies[face][i] + isCorner * 12
                 if not counter:
-                    substitute = affected_cubies[face][(i - 3) if (i & 3) == 3 else i + 1] + is_corner * 12
+                    killer = affected_cubies[face][(i - 3) if (i & 3) == 3 else i + 1] + isCorner * 12
                 else:
-                    substitute = affected_cubies[face][(i + 3) if (i & 3) == 0 else i - 1] + is_corner * 12
-                # print(target, substitute)
+                    killer = affected_cubies[face][(i + 3) if (i & 3) == 0 else i - 1] + isCorner * 12
+                # print(target, killer)
                 orientationDelta = int(1 < face < 4) if i < 4 else (0 if face < 2 else 2 - (i & 1))
-                new_state[affected_cubie] = oldstate[substitute]
-                new_state[affected_cubie + 20] = oldstate[substitute + 20] + orientationDelta
-
+                newstate[target] = oldstate[killer]
+                newstate[target + 20] = oldstate[killer + 20] + orientationDelta
                 if turn == turns - 1:
-                    new_state[affected_cubie + 20] %= 2 + is_corner
-        return CubeState(new_state)
+                    newstate[target + 20] %= 2 + isCorner
+        return CubeState(newstate, self.route + [move])
+
+
+def fill_phase_3():
+    goal_state = CubeState(list(range(20)) + 20 * [0])
+    queue = collections.deque()
+    visited = set()
+    queue.append(goal_state)
+
+    with open("phase_3.txt", "w") as f:
+        while queue:
+            state = queue.popleft()
+            state_str = ",".join(str(x) for x in state.state[:20])
+            moves_str = ",".join(str(inverse_move(x)) for x in state.route)
+
+            f.write(state_str + " " + moves_str + "\n")
+            
+            for move in phase_moves[3]:
+                newstate = state.apply_move(move)
+                if not (tuple(newstate.state[:20]) in visited):
+                    queue.append(newstate)
+                    visited.add(tuple(newstate.state[:20]))
+            print(len(visited))
 
 
 def test(test_state=None, debug=False):
@@ -75,10 +96,11 @@ def test(test_state=None, debug=False):
         state = CubeState(test_state.permutation)
     else:
         return None
+    state.route = []
     SOLUTION = []
 
-    for phase in range(4):
-        current_id, goal_id = state.compute_id(phase), goal_state.compute_id(phase)
+    for phase in range(3):
+        current_id, goal_id = state.id_(phase), goal_state.id_(phase)
         
         if current_id == goal_id:
             continue
@@ -98,15 +120,12 @@ def test(test_state=None, debug=False):
 
         while not phase_ok:
             old_state = states.popleft()
-            old_id = old_state.compute_id(phase)
+            old_id = old_state.id_(phase)
             old_dir = direction.get(old_id)
 
             for move in phase_moves[phase]:
-                if last_move.get(old_id) and last_move.get(old_id) // 3 == move // 3:
-                    continue
-
                 next_state = old_state.apply_move(move)
-                next_id = next_state.compute_id(phase)
+                next_id = next_state.id_(phase)
                 new_dir = direction.get(next_id, 0)
 
                 if new_dir and new_dir != old_dir:
@@ -141,13 +160,7 @@ def test(test_state=None, debug=False):
             if phase_ok:
                 break
     
-    #process solution
-    if debug:
-        print(len(SOLUTION))
-        print(' '.join(map(str,SOLUTION)))
-        print(' '.join(map(move_str,SOLUTION)))
-
-    i = 0
+    i=0
     while i < len(SOLUTION) - 1:
         if SOLUTION[i] // 3 == SOLUTION[i + 1] // 3:
             if SOLUTION[i] == inverse_move(SOLUTION[i + 1]):
@@ -161,11 +174,9 @@ def test(test_state=None, debug=False):
                 SOLUTION.pop(i+1)
             i -= 1
         i += 1
-                
 
     if debug:
         print(len(SOLUTION))
-        print(' '.join(map(str,SOLUTION)))
         print(' '.join(map(move_str,SOLUTION)))
     return SOLUTION
         
