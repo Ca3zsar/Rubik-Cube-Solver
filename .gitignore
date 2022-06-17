@@ -6,3 +6,4 @@
 *.jpg
 *.png
 recognition/samples/expected.txt
+cube.txt

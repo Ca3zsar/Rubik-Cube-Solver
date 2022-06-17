@@ -2,6 +2,8 @@ import statistics
 from functools import reduce
 from time import perf_counter
 from cubes.CFOP import CFOPCube
+from cubes.Cube import RubikCube
+from cubes.LayerByLayer import BeginnerCube
 from cubes.elements.CubeElements import Color
 from cubes import utils, distances
 import generator
@@ -17,7 +19,7 @@ def start_solver(index, cube, values):
 
 def test():
     batch = 1000
-    start = perf_counter()
+    
 
     cubes = []
     while len(cubes) < batch:
@@ -28,9 +30,11 @@ def test():
     threads = [None] * batch
     values = []
     try:
+        start = perf_counter()
         for i in range(batch):
             faces = cubes[i]
-            cfop = CFOPCube(faces)
+            # cfop = CFOPCube(faces)
+            cfop = BeginnerCube(faces)
             start_solver(i, cfop, values)
             # threads[i] = threading.Thread(target=start_solver, args=(i, cfop, values,))
             # threads[i].start()
@@ -47,12 +51,13 @@ def test():
 
     print("AVERAGE ")
     print(f"CFOP : {statistics.mean(values)}")
-    print("MEDIAN ")
-    print(statistics.median(values))
+    print(f"STDEV : {statistics.stdev(values)}")
+    print(max(values))
+    print(min(values))
     print(
         f"Over 170 : {reduce(lambda a, b: a + 1 if b > 170 else a, [0] + values, )} . Under 85 : {reduce(lambda a, b: a + 1 if b < 85 else a, [0] + values, )}")
     end = perf_counter()
-    print(f"TIME : {end - start}")
+    print(f"TIME : {(end - start)/batch}")
     plt.bar(list(intervals.keys()), list(intervals.values()))
     min_value = min(intervals.keys())
     max_value = max(intervals.keys())
@@ -107,3 +112,4 @@ def main():
 
 if __name__ == "__main__":
     test()
+

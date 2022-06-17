@@ -1,11 +1,11 @@
 #include <Stepper.h>
 
 const int stepsPerRevolution = 200;
-const byte numChars = 200;
+const byte numChars = 2000;
 char receivedChars[numChars];   // an array to store the received data
 
 boolean newData = false;
-int moves[100];
+int moves[400];
 int numberOfMoves = 0;
 
 int faces[] = {0, 4, 5, 2 , 1, 3  };
@@ -30,7 +30,7 @@ void setup() {
   for(int i=0;i<6;i++)
   {
     steppers[i] = new Stepper(stepsPerRevolution, start + i*4, start + i*4 + 1, start + i*4 + 2, start + i*4 + 3);
-    steppers[i]->setSpeed(100);
+    steppers[i]->setSpeed(80);
     steppers[i]->step(0);
   }
 }
@@ -55,12 +55,11 @@ void solveCube()
       int face = command / 3;
       int turns = command % 3;
       int steps = 0;
-      int extra = 2;
-      int sign = turns == 0?-1:1;
+      int sign = turns == 2?1:-1;
       switch(turns)
       {
         case 0: steps =-  stepsPerRevolution / 4 ;break;
-        case 1: steps = stepsPerRevolution / 2 ;break;
+        case 1: steps = - stepsPerRevolution / 2 ;break;
         case 2: steps = stepsPerRevolution / 4 ;break;
         default : break;
       }
@@ -71,10 +70,16 @@ void solveCube()
 //      {
 //          steps = steps + sign * 1;
 //      }
-      steppers[faces[face]]->step(steps);
-      
+      if(turns == 2)
+      {
+        steppers[faces[face]]->step(-steps);
+        steppers[faces[face]]->step(-steps);
+        steppers[faces[face]]->step(-steps - sign * 4);
+      }else{
+        steppers[faces[face]]->step(steps + sign * 4);
+      }
       setStepperIdle(faces[face]);
-      delay(2500);
+//      delay(2500);
     }
   }
   Serial.print("done");

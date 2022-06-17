@@ -55,28 +55,33 @@ def execute_step(rotation_index, step_index):
     print(f"Step {step_index}")
 
     command = f"{rotation_index}\n"
-    print(command)
     serial_comm.write(command.encode())
-    while not (message := serial_comm.readline().decode()):
+    while serial_comm.in_waiting:
         pass
-    print(message)
+    while not (message := serial_comm.readline().decode().strip()):
+        pass
+    print(f"First : {message}")
+    time.sleep(0.5)
 
-    live_camera.main(frame_index=step_index,show_placement = False, show_image = False)
+    live_camera.main(frame_index=step_index,show_placement = False, show_image = True)
     result = analyzer.apply_operations(
         show = False,
         crop = False,
         rotate = False,
-        image_name = f"samples/sample_{step_index}.jpg",
+        image_name = f"samples/frame_{step_index}.jpg",
         return_data = True
     )
-
+    print(f"Photo saved {step_index}")
+    
     set_faces(result, step_index)
+    time.sleep(0.5)
     while serial_comm.in_waiting:
         pass
     serial_comm.write(command.encode())
     while not (message := serial_comm.readline().decode()):
         pass
-    print(message)
+    print(f"Second :{message}")
+
 
 def main():
     # Place the cube in the right position and take the first photo 
@@ -86,12 +91,11 @@ def main():
         show = False,
         crop = False,
         rotate = False,
-        image_name = "samples/sample_0.jpg",
+        image_name = "samples/frame_0.jpg",
         return_data = True
     )
 
     set_faces(result, 0)
-
     for i in range(6):
         execute_step(i * 3 + 1, i + 1)
     
@@ -107,5 +111,4 @@ def main():
     live_camera.video.release()
 
 if __name__ == "__main__":
-
     main()
